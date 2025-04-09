@@ -9,21 +9,6 @@ class Book_ {
         this.pages = pages;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public int getPages() {
-        return pages;
-    }
-
-    public void setPages(int pages) {
-        this.pages = pages;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String toString() {
         return "Book [name=" + name + ", pages=" + pages + "]";

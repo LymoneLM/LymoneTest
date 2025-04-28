@@ -18,13 +18,54 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="50dc22c2-a265-471c-8978-9ac053671c48" name="变更" comment="变更">
+      <change afterPath="$PROJECT_DIR$/../CV/Chapter2_RGB2HSV.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../CppTest/230930.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../CppTest/230930.exe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../CppTest/231112-2.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../CppTest/231112.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../CppTest/241011/mm.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../CppTest/241011/mm.exe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../DSHomework/Contest1069/A.exe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/JavaTest/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/JavaTest/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/JavaTest/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/JavaTest/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/JavaTest/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/JavaTest/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/JavaTest/JavaTest.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/Q-DMS/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/Q-DMS/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/Q-DMS/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/Q-DMS/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/Q-DMS/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/Q-DMS/Q-DMS.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Java/Q-DMS/src/Main.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../JingGuanCode/LogitModel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../JingGuanCode/Standard-data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../JingGuanCode/data-DSC.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../JingGuanCode/data-indicator-DSC.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../JingGuanCode/data-sample.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../JingGuanCode/data-split.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../LymoneSnake/.vs/LymoneSnake/FileContentIndex/996dc3e0-7629-4b64-839c-f28775a37e01.vsidx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../LymoneSnake/.vs/LymoneSnake/FileContentIndex/a0f52f3a-1ea7-412b-a24b-689929d1781c.vsidx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../LymoneSnake/.vs/LymoneSnake/FileContentIndex/a6d2f71f-1ae5-40ca-9b95-7d3d6a3a6ec7.vsidx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../LymoneSnake/.vs/ProjectSettings.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../LymoneSnake/.vs/VSWorkspaceState.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../LymoneSnake/.vs/slnx.sqlite" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonLab/1.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonLab/2.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonLab/phyLab/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonLab/phyLab/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonLab/phyLab/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonLab/phyLab/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonLab/phyLab/.idea/phyLab.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PythonLab/phyLab/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.vscode/settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../.vscode/settings.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../CTest/test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../CTest/test.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../DSHomework/Contest1056/F.exe" beforeDir="false" afterPath="$PROJECT_DIR$/../DSHomework/Contest1056/F.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../DSHomework/Contest1056/F2.exe" beforeDir="false" afterPath="$PROJECT_DIR$/../DSHomework/Contest1056/F2.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../DSHomework/Contest1056/F3.exe" beforeDir="false" afterPath="$PROJECT_DIR$/../DSHomework/Contest1056/F3.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../DSHomework/Contest1056/F4.exe" beforeDir="false" afterPath="$PROJECT_DIR$/../DSHomework/Contest1056/F4.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java/JavaTest/src/cc/lymone/java/classtest/Chapter5_2.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Java/JavaTest/src/cc/lymone/java/classtest/Chapter5_2.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java/JavaTest/src/cc/lymone/java/classtest/newtest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Java/JavaTest/src/cc/lymone/java/classtest/newtest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java/JavaTest/src/cc/lymone/java/homework/Chapter3.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Java/JavaTest/src/cc/lymone/java/homework/Chapter3.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +103,7 @@
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;D:/GitCode/LymoneTest/CLiontest&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -95,6 +136,9 @@
       <workItem from="1685798360955" duration="628000" />
       <workItem from="1687351369577" duration="54000" />
       <workItem from="1687351629390" duration="10000" />
+      <workItem from="1694449499327" duration="87000" />
+      <workItem from="1743266509254" duration="140000" />
+      <workItem from="1743266659385" duration="53000" />
     </task>
     <servers />
   </component>

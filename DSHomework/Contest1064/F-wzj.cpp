@@ -38,7 +38,6 @@ void bfs() {
         }
         for (i = 0; i < 4; i++) {
             next = a;
-
             next.x += to[i][0];
             next.y += to[i][1];
             if (check(next.x, next.y))

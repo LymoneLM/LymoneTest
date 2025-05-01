@@ -1,7 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module type="PYTHON_MODULE" version="4">
+<module type="CPP_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/CTest/StudentScoreSystem/.history" />
+      <excludeFolder url="file://$MODULE_DIR$/ComputerVisionTest/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/CppTest/CLiontest/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/JavaTest/JavaTest/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/JavaTest/JavaTest/out" />
+      <excludeFolder url="file://$MODULE_DIR$/JavaTest/Q-DMS/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/JavaTest/Q-DMS/out" />
+      <excludeFolder url="file://$MODULE_DIR$/PythonTest/JingGuanCode/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/PythonTest/JingGuanCode/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/PythonTest/Python123/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/PythonTest/PythonLab/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/PythonTest/PythonLab/phyLab/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-LymoneCalculate-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/CMakeFiles/3.24.2/CompilerIdCXX/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-LymoneCalculate-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/CMakeFiles/CMakeTmp" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-LymoneCalculate-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/CMakeFiles/pkgRedirects" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/.cmake/api/v1/reply.prev" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/CMakeFiles/3.24.2/CompilerIdCXX/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/CMakeFiles/CMakeTmp" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/CMakeFiles/pkgRedirects" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Release/.cmake/api/v1/reply.prev" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Release/CMakeFiles/3.24.2/CompilerIdCXX/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Release/CMakeFiles/CMakeTmp" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Release/CMakeFiles/pkgRedirects" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest2-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/.cmake/api/v1/reply.prev" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest2-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/CMakeFiles/3.24.2/CompilerIdCXX/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest2-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/CMakeFiles/CMakeTmp" />
+      <excludeFolder url="file://$MODULE_DIR$/QtTest/build-QtTest2-Desktop_Qt_6_5_0_MinGW_64_bit-Debug/CMakeFiles/pkgRedirects" />
+      <excludeFolder url="file://$MODULE_DIR$/EasyXTest/EasyXtest/.vs" />
+      <excludeFolder url="file://$MODULE_DIR$/EasyXTest/LymoneSnake/.vs" />
+      <excludeFolder url="file://$MODULE_DIR$/EasyXTest/LymoneSnake/.vs/LymoneSnake/FileContentIndex/merges" />
+      <excludeFolder url="file://$MODULE_DIR$/EasyXTest/LymoneSnake/.vs/LymoneSnake/v17/ipch/AutoPCH/51dc678d979d2800" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

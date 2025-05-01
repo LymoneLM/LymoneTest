@@ -1,9 +1,0 @@
-# ninja log v5
-1	729	7067271031723832	QtTest1_autogen/timestamp	71548e5f6426c0cd
-1	729	7067271031723832	QtTest1_autogen/mocs_compilation.cpp	71548e5f6426c0cd
-1	729	7067271031723832	D:/GitCode/LymoneTest/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Release/QtTest1_autogen/timestamp	71548e5f6426c0cd
-1	729	7067271031723832	D:/GitCode/LymoneTest/QtTest/build-QtTest1-Desktop_Qt_6_5_0_MinGW_64_bit-Release/QtTest1_autogen/mocs_compilation.cpp	71548e5f6426c0cd
-730	1851	7067271044307466	CMakeFiles/QtTest1.dir/QtTest1_autogen/mocs_compilation.cpp.obj	daba5d7c214eed56
-739	1855	7067271044337366	CMakeFiles/QtTest1.dir/main.cpp.obj	9595ef68e4d41296
-748	1925	7067271045054822	CMakeFiles/QtTest1.dir/mainwindow.cpp.obj	c40a9c6f19570292
-1925	2052	7067271046296647	QtTest1.exe	a5cb7642402056c8

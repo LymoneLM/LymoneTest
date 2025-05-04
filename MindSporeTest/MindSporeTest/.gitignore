@@ -1,3 +1,4 @@
 /*.ckpt
 /MNIST_Data/
 /.ipynb_checkpoints
+/checkpoint_lenet-graph.meta

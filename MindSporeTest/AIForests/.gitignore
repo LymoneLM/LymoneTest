@@ -1,4 +1,4 @@
-/ipynb_checkpoints/
+/.ipynb_checkpoints/
 /data/
 /LoadPretrainedModel/resnet50_224.ckpt
 /Canidae_data.zip

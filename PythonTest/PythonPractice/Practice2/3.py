@@ -1,0 +1,7 @@
+rate, base, year = input().split(',')
+rate = float(rate)
+base = int(base)
+year = int(year)
+per_month = rate*base/(1-1/(1+rate)**(year*12))
+print("{:.2f}".format(per_month))
+print("{:.2f}".format(per_month*year*12))

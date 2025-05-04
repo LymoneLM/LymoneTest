@@ -1,0 +1,6 @@
+D:\Steam\steamapps\common\Meeple Station\BepInEx\plugins\MeepleStationTestMod.dll
+D:\Steam\steamapps\common\Meeple Station\BepInEx\plugins\MeepleStationTestMod.pdb
+D:\GitCode\MeepleStationTestMod\obj\Debug\MeepleStationTestMod.csproj.AssemblyReference.cache
+D:\GitCode\MeepleStationTestMod\obj\Debug\MeepleStationTestMod.csproj.CoreCompileInputs.cache
+D:\GitCode\MeepleStationTestMod\obj\Debug\MeepleStationTestMod.dll
+D:\GitCode\MeepleStationTestMod\obj\Debug\MeepleStationTestMod.pdb

@@ -1,0 +1,27 @@
+/**index.wxss**/
+.topic {
+  font-family: "圆体";
+  font-size: 30px;
+  background-color:rgb(99, 230, 99);
+  border: 3px solid rgb(99, 230, 99);
+  margin: auto;
+  text-align: center;
+  position: fixed;
+  top:0;
+}
+.usermotto {
+  margin-top: 200px;
+}
+.bottom {
+  margin-top: 100px;
+}
+.text {
+  margin-top: 20px;
+  font-family: "圆体";
+  font-size: 20px;
+}
+.ans {
+  margin-top: 20px;
+  font-family: "圆体";
+  font-size: 30px;
+}

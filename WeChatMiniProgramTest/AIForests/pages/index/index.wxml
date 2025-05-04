@@ -1,0 +1,10 @@
+<!--index.wxml-->
+<view class="container">
+    <div class="topic">树木识别小程序树木识别小程序树木识别小程序</div>
+  <view class="bottom">
+    <image src="{{ imageUrl }}"></image>
+    <button bindtap="uploadImage">点击上传图片</button>
+  </view>
+    <text class="text">这棵树的种类编号是</text>
+    <text class="ans">{{motto}}</text>
+</view>

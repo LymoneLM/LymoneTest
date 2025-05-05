@@ -29,17 +29,16 @@ world_map_merged <- world_map_clean %>%
   left_join(df_long, by = "iso3c") %>%
   filter(!is.na(Year))
 
-png("./output/1/plot3.png", width = 1600, height = 900)
+png("./output/1/plot3.png", width = 3200, height = 1800)
 print(
   ggplot(world_map_merged, aes(x = long, y = lat, group = group)) +
     geom_polygon(aes(fill = Count), colour = "black", linewidth = 0.1) +
-    scale_fill_gradient(low = "white", high = "black") +
-    # 黑白填充色
-    labs(title = "Global HIV/AIDS Deaths by Country and Year") +
+    scale_fill_gradient(low = "white", high = "red", na.value = "black") +
+    labs(title = "1990-2019 世界 AIDS/HIV 死亡人数") +
     theme_void() +
     theme(
       legend.position = "bottom",
-      strip.text = element_text(size = 8)
+      strip.text = element_text(size = 20)
     ) +
     facet_wrap(~Year, ncol = 6)
 )

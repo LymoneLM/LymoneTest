@@ -10,8 +10,8 @@ max_volume <- max(stock_data$Volume)
 stock_data$Volume_scaled <- stock_data$Volume * (max_close / max_volume)
 
 p <- ggplot(stock_data, aes(x = Date)) +
-  geom_line(aes(y = Close.Last), color = "black", size = 1) +  
-  geom_bar(aes(y = Volume_scaled), stat = "identity", fill = "gray", alpha = 0.5) +  
+  geom_line(aes(y = Close.Last), color = "red", size = 1) +  
+  geom_bar(aes(y = Volume_scaled), stat = "identity", fill = "green", alpha = 0.5) +  
   scale_y_continuous(
     name = "收盘价 (美元)",
     sec.axis = sec_axis(~ . * (max_volume / max_close), name = "交易量")

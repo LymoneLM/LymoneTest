@@ -14,8 +14,8 @@ bike_data_filtered <- bike_data %>%
   filter(!is.na(Bike.model)) 
 
 p <- ggplot(bike_data_filtered, aes(x = Bike.model, y = Total.duration.min)) +
-  geom_violin(fill = "gray80", color = "black", alpha = 0.5) +  
-  geom_boxplot(width = 0.2, fill = "white", color = "black") +  
+  geom_violin(fill = "#558ffc", color = "black", alpha = 0.5) +  
+  geom_boxplot(width = 0.2, fill = "white", color = "black") + 
   labs(title = "不同自行车型号的租赁时长分布", 
        x = "自行车型号", 
        y = "租赁时长（分钟）") +

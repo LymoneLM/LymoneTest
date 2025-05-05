@@ -15,9 +15,9 @@ melted_cor <- melt(cor_matrix)
 
 p <- ggplot(melted_cor, aes(x = Var1, y = Var2, fill = value)) +
   geom_tile() +
-  scale_fill_gradient2(low = "black", high = "white", mid = "gray", midpoint = 0, 
+  scale_fill_gradient2(low = "white", high = "red", mid = "#ff7676", midpoint = 0, 
                        limits = c(-1, 1), name = "相关性") +
-  geom_text(aes(label = round(value, 2)), color = "black", size = 4) +  
+  geom_text(aes(label = round(value, 2)), color = "black", size = 8) +  
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 

@@ -21,7 +21,7 @@ data_long <- data %>%
 write.csv(data_long, "./output/2/data_long.csv", row.names = FALSE)
 
 p3 <- ggplot(data, aes(x = NrSiblings)) +
-  geom_histogram(binwidth = 1, fill = "grey50", color = "black") +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
   labs(title = "Distribution of Sibling Counts", x = "Number of Siblings", y = "Count") +
   theme_bw()
 
@@ -31,7 +31,7 @@ p4 <- data %>%
   summarise(AvgMath = mean(MathScore, na.rm = TRUE)) %>%
   ggplot(aes(x = NrSiblings, y = AvgMath)) +
   geom_line(linewidth = 1) +
-  geom_point(size = 2) +
+  geom_point(size = 4) +
   labs(title = "Sibling Count vs. Math Scores", x = "Number of Siblings", y = "Average Math Score") +
   theme_bw()
 

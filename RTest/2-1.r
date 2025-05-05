@@ -19,13 +19,13 @@ data_long <- data %>%
   )
 p1 <- ggplot(data_long, aes(x = Gender, y = Score, fill = Gender)) +
   geom_boxplot(alpha = 0.7) +
-  scale_fill_grey(start = 0.3, end = 0.7) +
+  scale_fill_manual(values = c("male" = "#1f77b4", "female" = "#ff7f0e")) +
   labs(title = "Gender vs. Subject Scores", x = "Gender", y = "Score") +
   facet_wrap(~Subject) +
   theme_bw()
 p2 <- ggplot(data_long, aes(x = Gender, y = Score, fill = Gender)) +
   geom_violin(trim = FALSE, alpha = 0.7) +
-  scale_fill_grey(start = 0.3, end = 0.7) +
+  scale_fill_manual(values = c("male" = "#1f77b4", "female" = "#ff7f0e")) +
   labs(title = "Score Density by Gender", x = "Gender", y = "Score") +
   facet_wrap(~Subject) +
   theme_bw()

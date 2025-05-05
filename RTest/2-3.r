@@ -25,9 +25,18 @@ data_hierarchy <- data %>%
 
 x <- ggplot(data_hierarchy, aes(x = Gender, y = Score, fill = EthnicGroup)) +
   geom_col(position = "stack", width = 0.7) +
-  scale_fill_grey(start = 0.2, end = 0.8) +  
-  labs(title = "Scores by Gender and Ethnicity", x = "Gender", y = "Average Score") +
-  facet_wrap(~Subject) + 
+  scale_fill_manual(
+    values = c(
+      "na.value" = "black",
+      "group A" = "#1230da",
+      "group B" = "#3055b1",
+      "group C" = "#21918C",
+      "group D" = "#5DC863",
+      "group E" = "#FDE725"
+    )
+  ) +
+  labs(title = "不同性别和族群成绩", x = "Gender", y = "Average Score") +
+  facet_wrap(~Subject) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 png("./output/2/plot3.png", width = 1600, height = 900)

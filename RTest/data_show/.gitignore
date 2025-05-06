@@ -5,3 +5,5 @@
 /stand/
 /RTest.Rproj
 /.Rproj.user/
+*.zip 
+.Rhistory

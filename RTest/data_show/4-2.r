@@ -30,4 +30,4 @@ print(p)
 
 
 ggsave("./output/4/bike_duration_model_plot.png", p, bg = "white", width = 8, height = 6, dpi = 300)
-write.csv(bike_data_filtered, "./output/4/processed_bike_data.csv", row.names = FALSE)
+# write.csv(bike_data_filtered, "./output/4/processed_bike_data.csv", row.names = FALSE)

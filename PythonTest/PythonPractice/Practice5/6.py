@@ -19,4 +19,4 @@ for a in range(2, x):
         pairs.add((a, b))
 
 for pair in sorted(pairs):
-    print(f"亲密数对:A={pair[0]:4},B={pair[1]:4}")
+    print(f"亲密数对: A={pair[0]:4}, B={pair[1]:4}")

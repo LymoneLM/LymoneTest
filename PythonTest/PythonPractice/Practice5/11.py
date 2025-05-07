@@ -12,5 +12,5 @@ def recursive_f(n):
     return n / (2*n + 1) + recursive_f(n-1)
 
 n = int(input())
-print(f"递推法f({n})={iterative_f(n)}")
-print(f"递归法f({n})={recursive_f(n)}")
+print(f"递推法 f({n})= {iterative_f(n)}")
+print(f"递归法 f({n})= {recursive_f(n)}")

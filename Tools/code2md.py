@@ -1,22 +1,33 @@
 import argparse
 import os
+from os import mkdir
 
 def main():
     parser = argparse.ArgumentParser(description='Generate Markdown documentation from code files')
     parser.add_argument('folder', help='Target directory path')
     parser.add_argument('--head', help='Header Markdown file path')
     parser.add_argument('--tail', help='Footer Markdown file path')
+    parser.add_argument('--output', help='Output directory path')
     args = parser.parse_args()
 
     # 处理目标文件夹路径
     target_folder = os.path.abspath(args.folder)
+    output_folder = os.path.abspath(os.path.join(__file__, '..', "output"))
+    if args.output:
+        output_folder = os.path.abspath(args.output)
+
     if not os.path.isdir(target_folder):
         print(f"Error: '{args.folder}' is not a valid directory")
         return
-
-    # 准备输出文件路径
     folder_name = os.path.basename(target_folder)
-    output_path = os.path.join(os.path.dirname(target_folder), f"{folder_name}.md")
+
+    try:
+        if not os.path.isdir(output_folder):
+            mkdir(output_folder)
+    except Exception as e:
+        print(f"Error: {str(e)} when touch folder '{output_folder}'")
+    output_path = os.path.join(output_folder, f"{folder_name}.md")
+
 
     # 收集代码文件
     code_entries = []
@@ -41,7 +52,7 @@ def main():
         except Exception as e:
             code_content = f"// Error reading file: {str(e)}"
         
-        content_blocks.append(f"{rel_path}\n\n```{lang}\n{code_content}\n```")
+        content_blocks.append(f"### {rel_path}\n\n```{lang}\n{code_content}\n```")
 
     # 处理头尾内容
     header = ""

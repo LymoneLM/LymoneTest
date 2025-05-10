@@ -31,8 +31,9 @@ python merge2ipynb.py -i ./Practice2 -o practice2.ipynb
 
 #### 可选参数
 
-   - `--head` 参数：在文档开头插入指定Markdown内容
-   - `--tail` 参数：在文档末尾插入指定Markdown内容
+   - `--head` ：在文档开头插入指定Markdown内容
+   - `--tail` ：在文档末尾插入指定Markdown内容
+   - `--output` ：选择输出文件夹（默认为`脚本根目录/ouput`）
 
 #### 使用方法
 
@@ -41,8 +42,8 @@ python merge2ipynb.py -i ./Practice2 -o practice2.ipynb
 ```
 python code2md.py ./my_project
 ```
-带头部和尾部内容：
+带参数：
 
 ```
-python code2md.py ./my_project --head intro.md --tail notes.md
+python code2md.py ./my_project --head intro.md --tail notes.md --output ./output
 ```

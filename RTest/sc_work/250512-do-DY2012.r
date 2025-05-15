@@ -4,6 +4,8 @@ library(vars)
 library(rugarch)
 library(rmgarch)
 library(fBasics)
+library(frequencyConnectedness) 
+library(dplyr)
 
 data <- read.csv("bank_returns.csv",
                  header = TRUE,
@@ -64,11 +66,11 @@ list(
   Net = net(sp_dy),
   Pairwise = pairwise(sp_dy)
 ) %>%
-  write.csv("Static_Spillover_Results.csv", row.names = FALSE)
+write.csv("Static_Spillover_Results.csv", row.names = FALSE)
 
 # 动态滚动窗口分析 ----------------------------------------------------------
 # 设置滚动窗口参数（窗口大小根据数据量调整）
-params_est <- list(p = best_p, type = "const") 
+params_est <- list(p = best_p, type = "const")
 sp_roll <- spilloverRollingDY12(
   GARCH_vol,
   n.ahead = 10,

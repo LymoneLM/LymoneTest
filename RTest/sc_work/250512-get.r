@@ -1,4 +1,5 @@
 library(quantmod)
+library(pedquant)
 library(tidyverse)
 library(xts)
 library(purrr)

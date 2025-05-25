@@ -14,12 +14,10 @@ NIR = data['NIR']
 octane = data['octane'].flatten()
 
 # === 2. 数据预处理 ===
-# 标准化
+X_train, X_test, y_train, y_test = train_test_split(NIR, octane, test_size=0.2, random_state=42)
 scaler = StandardScaler()
-Xn = scaler.fit_transform(NIR)
-
-# 划分训练集测试集
-X_train, X_test, y_train, y_test = train_test_split(Xn, octane, test_size=0.2, random_state=42)
+y_train = scaler.fit_transform(y_train.reshape(-1, 1)).flatten()
+y_test = scaler.transform(y_test.reshape(-1, 1)).flatten()
 
 # === 3. 构建BP神经网络 ===
 model = Sequential([
@@ -40,7 +38,11 @@ history = model.fit(
 
 # === 6. 预测 ===
 y_train_pred = model.predict(X_train).flatten()
+# y_train_pred = scaler.inverse_transform(y_train_pred.reshape(-1, 1)).flatten()
+# y_test_pred = model.predict(X_test).flatten()
+y_test = scaler.inverse_transform(y_test.reshape(-1, 1)).flatten()
 y_test_pred = model.predict(X_test).flatten()
+y_test_pred = scaler.inverse_transform(y_test_pred.reshape(-1, 1)).flatten()
 
 # === 7. 性能评估 ===
 RE_train = np.mean(np.abs(y_train - y_train_pred)/y_train)

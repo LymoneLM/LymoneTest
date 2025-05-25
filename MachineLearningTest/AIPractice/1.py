@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Dense
 
 # === 1. 加载数据 ===
 data_path = "./data"
-data = loadmat(data_path+'spectra_data.mat')  # 替换为实际文件路径
+data = loadmat(data_path+'/spectra_data.mat')  # 替换为实际文件路径
 NIR = data['NIR']  # 光谱数据 (60, 401)
 octane = data['octane'].flatten()  # 辛烷值 (60,)
 

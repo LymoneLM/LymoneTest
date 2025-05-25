@@ -10,14 +10,14 @@ from matplotlib.colors import ListedColormap
 # 生成二维网格数据
 interval = 0.1
 side = 1.5
-x1 = np.arange(-side, side+interval, interval)
-x2 = np.arange(-side, side+interval, interval)
+x1 = np.arange(-side, side + interval, interval)
+x2 = np.arange(-side, side + interval, interval)
 xx1, xx2 = np.meshgrid(x1, x2)
 
 # 计算目标函数值（二维网格形式）
 F = (20
-     + xx1**2 - 10*np.cos(2*np.pi*xx1)
-     + xx2**2 - 10*np.cos(2*np.pi*xx2))
+     + xx1 ** 2 - 10 * np.cos(2 * np.pi * xx1)
+     + xx2 ** 2 - 10 * np.cos(2 * np.pi * xx2))
 
 # 将网格数据展平为二维数组
 X = np.column_stack([xx1.ravel(), xx2.ravel()])
@@ -25,7 +25,6 @@ F = F.ravel()  # 目标值展平为一维数组
 # 为BP提供数据
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
-
 
 # ================== RBF网络部分 ==================
 # ->精确RBF<-
@@ -86,27 +85,29 @@ surf_params = [
     {"surface": ty_bp.reshape(xx1.shape), "cmap": 'coolwarm', "label": "BP网络", "alpha": 0.7}
 ]
 
+
 # 创建自定义半透明色带
 def make_alpha_cmap(base_cmap, alpha=0.5):
     base_cmap = plt.get_cmap(base_cmap)
     color_list = base_cmap(np.arange(base_cmap.N))
-    color_list[:,-1] = alpha  # 修改alpha通道
+    color_list[:, -1] = alpha  # 修改alpha通道
     return ListedColormap(color_list)
+
 
 # 绘制各曲面
 for param in surf_params:
     cmap = make_alpha_cmap(param["cmap"], param["alpha"])
     surf = ax.plot_surface(xx1, xx2, param["surface"],
-                         cmap=cmap,
-                         # rstride=2, cstride=2,  # 降低网格密度
-                         edgecolor='k', linewidth=0.1,
-                         label=param["label"])
+                           cmap=cmap,
+                           # rstride=2, cstride=2,  # 降低网格密度
+                           edgecolor='k', linewidth=0.1,
+                           label=param["label"])
 
 # 添加图例代理
-proxy_artists = [plt.Rectangle((0,0),1,1, fc=plt.get_cmap(p["cmap"])(0.5), alpha=p["alpha"])
+proxy_artists = [plt.Rectangle((0, 0), 1, 1, fc=plt.get_cmap(p["cmap"])(0.5), alpha=p["alpha"])
                  for p in surf_params]
 ax.legend(proxy_artists, [p["label"] for p in surf_params],
-         loc='upper left', bbox_to_anchor=(0.02, 0.95))
+          loc='upper left', bbox_to_anchor=(0.02, 0.95))
 
 # 设置观察角度
 ax.view_init(elev=38, azim=-135)
@@ -126,10 +127,12 @@ cbar.set_label('函数值范围', rotation=270, labelpad=15)
 plt.tight_layout()
 plt.show()
 
+
 def print_metrics(name, true, pred):
     print(f"{name}:")
     print(f"MSE: {mean_squared_error(true, pred):.4f}")
     print(f"R²: {r2_score(true, pred):.4f}")
+
 
 print_metrics("精确RBF", F, ty_exact)
 print_metrics("近似RBF", F, ty_approx)

@@ -5,16 +5,20 @@ from sklearn.metrics.pairwise import euclidean_distances, rbf_kernel
 from sklearn.cluster import KMeans
 from sklearn.metrics import mean_squared_error, r2_score
 
-# 生成数据
-interval = 0.01
-x1 = np.linspace(-1.5, 1.5, int(3 / interval) + 1)
-x2 = np.linspace(-1.5, 1.5, int(3 / interval) + 1)
+# 生成二维网格数据
+interval = 0.1
+x1 = np.arange(-1.5, 1.5+interval, interval)
+x2 = np.arange(-1.5, 1.5+interval, interval)
+xx1, xx2 = np.meshgrid(x1, x2)
 
-# 计算目标函数值
-F = 20 + x1**2 - 10 * np.cos(2 * np.pi * x1) + x2**2 - 10 * np.cos(2 * np.pi * x2)
+# 计算目标函数值（二维网格形式）
+F = (20
+     + xx1**2 - 10*np.cos(2*np.pi*xx1)
+     + xx2**2 - 10*np.cos(2*np.pi*xx2))
 
-# 构造输入数据 (2, 301)
-X = np.vstack([x1, x2]).T  # (301, 2)
+# 将网格数据展平为二维数组
+X = np.column_stack([xx1.ravel(), xx2.ravel()])
+F = F.ravel()  # 目标值展平为一维数组
 
 # 精确RBF网络
 # 计算自适应spread参数
@@ -51,27 +55,26 @@ ty_approx = Phi_approx.dot(w_approx)
 
 # 可视化结果
 plt.rc("font",family='MicroSoft YaHei',weight="bold")
-fig = plt.figure(figsize=(12, 6))
-
 # 精确RBF可视化
-ax1 = fig.add_subplot(121, projection='3d')
-ax1.scatter(x1, x2, F, c='r', marker='o', label='真实值')
-ax1.scatter(x1, x2, ty_exact, c='b', linestyle='-.', label='预测值')
-ax1.view_init(elev=36, azim=113)
-ax1.set_xlabel('x1')
-ax1.set_ylabel('x2')
-ax1.set_zlabel('F')
-ax1.set_title('精确RBF网络拟合效果')
+fig = plt.figure(figsize=(15,6))
 
-# 近似RBF可视化
-ax2 = fig.add_subplot(122, projection='3d')
-ax2.scatter(x1, x2, F, c='r', marker='o', label='真实值')
-ax2.scatter(x1, x2, ty_approx, c='g', linestyle='-.', label='预测值')
-ax2.view_init(elev=36, azim=113)
-ax2.set_xlabel('x1')
-ax2.set_ylabel('x2')
-ax2.set_zlabel('F')
-ax2.set_title('近似RBF网络拟合效果')
+# 原始曲面
+ax1 = fig.add_subplot(131, projection='3d')
+surf1 = ax1.plot_surface(xx1, xx2, F.reshape(xx1.shape),
+                       cmap='viridis', alpha=0.8)
+ax1.set_title("原始函数曲面")
+
+# 精确RBF预测结果
+ax2 = fig.add_subplot(132, projection='3d')
+surf2 = ax2.plot_surface(xx1, xx2, ty_exact.reshape(xx1.shape),
+                       cmap='plasma', alpha=0.8)
+ax2.set_title("精确RBF拟合曲面")
+
+# 近似RBF预测结果
+ax3 = fig.add_subplot(133, projection='3d')
+surf3 = ax3.plot_surface(xx1, xx2, ty_approx.reshape(xx1.shape),
+                       cmap='magma', alpha=0.8)
+ax3.set_title("近似RBF拟合曲面")
 
 plt.tight_layout()
 plt.show()

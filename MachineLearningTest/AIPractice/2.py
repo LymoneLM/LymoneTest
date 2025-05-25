@@ -72,6 +72,37 @@ bp_net.fit(X_scaled, F)
 ty_bp = bp_net.predict(X_scaled)
 
 # ================== 输出&可视化 ==================
+# 可视化结果
+plt.rc("font",family='MicroSoft YaHei',weight="bold")
+# 精确RBF可视化
+fig = plt.figure(figsize=(6,6))
+
+# 原始曲面
+ax1 = fig.add_subplot(221, projection='3d')
+surf1 = ax1.plot_surface(xx1, xx2, F.reshape(xx1.shape),
+                       cmap='viridis', alpha=0.8)
+ax1.set_title("原始函数曲面")
+
+# 精确RBF预测结果
+ax2 = fig.add_subplot(222, projection='3d')
+surf2 = ax2.plot_surface(xx1, xx2, ty_exact.reshape(xx1.shape),
+                       cmap='plasma', alpha=0.8)
+ax2.set_title("精确RBF拟合曲面")
+
+# 近似RBF预测结果
+ax3 = fig.add_subplot(223, projection='3d')
+surf3 = ax3.plot_surface(xx1, xx2, ty_approx.reshape(xx1.shape),
+                       cmap='magma', alpha=0.8)
+ax3.set_title("近似RBF拟合曲面")
+
+# BP神经网络
+ax4 = fig.add_subplot(224, projection='3d')
+surf4 = ax4.plot_surface(xx1, xx2, ty_bp.reshape(xx1.shape),
+                       cmap='magma', alpha=0.8)
+ax4.set_title("BP神经网络拟合曲面")
+
+plt.tight_layout()
+plt.show()
 # ================== 统一空间可视化 ==================
 plt.rc("font", family='Microsoft YaHei', weight="bold")
 fig = plt.figure(figsize=(12, 8))

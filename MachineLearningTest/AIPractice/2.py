@@ -30,8 +30,8 @@ X_scaled = scaler.fit_transform(X)
 # ->精确RBF<-
 # 计算自适应spread参数
 dists = euclidean_distances(X)
-tri_indices = np.triu_indices_from(dists, k=1)
-mean_dist = np.mean(dists[tri_indices])
+triu_indices = np.triu_indices_from(dists, k=1)
+mean_dist = np.mean(dists[triu_indices])
 gamma_exact = 1 / (2 * (mean_dist ** 2))
 
 # 构造RBF特征矩阵
@@ -49,8 +49,8 @@ centers = kmeans.cluster_centers_
 
 # 计算近似模型的gamma
 dists_approx = euclidean_distances(centers)
-tri_indices_approx = np.triu_indices_from(dists_approx, k=1)
-mean_dist_approx = np.mean(dists_approx[tri_indices_approx])
+triu_indices_approx = np.triu_indices_from(dists_approx, k=1)
+mean_dist_approx = np.mean(dists_approx[triu_indices_approx])
 gamma_approx = 1 / (2 * (mean_dist_approx ** 2))
 
 # 构造近似RBF特征矩阵

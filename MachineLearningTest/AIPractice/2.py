@@ -26,39 +26,31 @@ F = F.ravel()  # 目标值展平为一维数组
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
+
 # ================== RBF网络部分 ==================
+def rbf(x, center, y):
+    dists = euclidean_distances(x)
+    triu_indices = np.triu_indices_from(dists, k=1)
+    mean_dist = np.mean(dists[triu_indices])
+    gamma_exact = 1 / (2 * (mean_dist ** 2))
+
+    # 构造RBF特征矩阵
+    phi_exact = rbf_kernel(x, center, gamma=gamma_exact)
+
+    # 求解权重
+    w_exact, _, _, _ = np.linalg.lstsq(phi_exact, y, rcond=None)
+    return phi_exact.dot(w_exact)
+
+
 # ->精确RBF<-
-# 计算自适应spread参数
-dists = euclidean_distances(X)
-triu_indices = np.triu_indices_from(dists, k=1)
-mean_dist = np.mean(dists[triu_indices])
-gamma_exact = 1 / (2 * (mean_dist ** 2))
-
-# 构造RBF特征矩阵
-Phi_exact = rbf_kernel(X, X, gamma=gamma_exact)
-
-# 求解权重
-w_exact, _, _, _ = np.linalg.lstsq(Phi_exact, F, rcond=None)
-ty_exact = Phi_exact.dot(w_exact)
+ty_exact = rbf(X, X, F)
 
 # ->近似RBF网络<-
 n_centers = 50  # 聚类中心数
 kmeans = KMeans(n_clusters=n_centers)
 kmeans.fit(X)
 centers = kmeans.cluster_centers_
-
-# 计算近似模型的gamma
-dists_approx = euclidean_distances(centers)
-triu_indices_approx = np.triu_indices_from(dists_approx, k=1)
-mean_dist_approx = np.mean(dists_approx[triu_indices_approx])
-gamma_approx = 1 / (2 * (mean_dist_approx ** 2))
-
-# 构造近似RBF特征矩阵
-Phi_approx = rbf_kernel(X, centers, gamma=gamma_approx)
-
-# 求解权重
-w_approx, _, _, _ = np.linalg.lstsq(Phi_approx, F, rcond=None)
-ty_approx = Phi_approx.dot(w_approx)
+ty_approx = rbf(X, centers, F)
 
 # ================== BP神经网络部分 ==================
 bp_net = MLPRegressor(
@@ -73,32 +65,32 @@ ty_bp = bp_net.predict(X_scaled)
 
 # ================== 输出&可视化 ==================
 # 可视化结果
-plt.rc("font",family='MicroSoft YaHei',weight="bold")
+plt.rc("font", family='MicroSoft YaHei', weight="bold")
 # 精确RBF可视化
-fig = plt.figure(figsize=(6,6))
+fig = plt.figure(figsize=(6, 6))
 
 # 原始曲面
 ax1 = fig.add_subplot(221, projection='3d')
 surf1 = ax1.plot_surface(xx1, xx2, F.reshape(xx1.shape),
-                       cmap='viridis', alpha=0.8)
+                         cmap='viridis', alpha=0.8)
 ax1.set_title("原始函数曲面")
 
 # 精确RBF预测结果
 ax2 = fig.add_subplot(222, projection='3d')
 surf2 = ax2.plot_surface(xx1, xx2, ty_exact.reshape(xx1.shape),
-                       cmap='plasma', alpha=0.8)
+                         cmap='plasma', alpha=0.8)
 ax2.set_title("精确RBF拟合曲面")
 
 # 近似RBF预测结果
 ax3 = fig.add_subplot(223, projection='3d')
 surf3 = ax3.plot_surface(xx1, xx2, ty_approx.reshape(xx1.shape),
-                       cmap='magma', alpha=0.8)
+                         cmap='magma', alpha=0.8)
 ax3.set_title("近似RBF拟合曲面")
 
 # BP神经网络
 ax4 = fig.add_subplot(224, projection='3d')
 surf4 = ax4.plot_surface(xx1, xx2, ty_bp.reshape(xx1.shape),
-                       cmap='magma', alpha=0.8)
+                         cmap='magma', alpha=0.8)
 ax4.set_title("BP神经网络拟合曲面")
 
 plt.tight_layout()
@@ -130,7 +122,6 @@ for param in surf_params:
     cmap = make_alpha_cmap(param["cmap"], param["alpha"])
     surf = ax.plot_surface(xx1, xx2, param["surface"],
                            cmap=cmap,
-                           # rstride=2, cstride=2,  # 降低网格密度
                            edgecolor='k', linewidth=0.1,
                            label=param["label"])
 

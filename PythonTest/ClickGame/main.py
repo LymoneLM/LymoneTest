@@ -8,6 +8,7 @@ assets_path = "./assets"
 name = "点击挑战小游戏"
 copy_right = "某某某_学号xxx制作"
 
+
 class ClickSpeedGame:
     def __init__(self, root):
         # 初始化
@@ -29,9 +30,12 @@ class ClickSpeedGame:
 
         # 加载图片
         try:
-            self.bg_img = ImageTk.PhotoImage(Image.open(assets_path+"/bg.png").resize((self.CELL_SIZE, self.CELL_SIZE)))
-            self.active_img = ImageTk.PhotoImage(Image.open(assets_path+"/active.png").resize((self.CELL_SIZE, self.CELL_SIZE)))
-            self.clicked_img = ImageTk.PhotoImage(Image.open(assets_path+"/clicked.png").resize((self.CELL_SIZE, self.CELL_SIZE)))
+            self.bg_img = ImageTk.PhotoImage(
+                Image.open(f"{assets_path}/bg.png").resize((self.CELL_SIZE, self.CELL_SIZE)))
+            self.active_img = ImageTk.PhotoImage(
+                Image.open(f"{assets_path}/active.png").resize((self.CELL_SIZE, self.CELL_SIZE)))
+            self.clicked_img = ImageTk.PhotoImage(
+                Image.open(f"{assets_path}/clicked.png").resize((self.CELL_SIZE, self.CELL_SIZE)))
         except Exception as e:
             messagebox.showerror("错误", f"图片加载失败: {str(e)}")
             root.destroy()
@@ -84,8 +88,6 @@ class ClickSpeedGame:
         self.remaining = self.TARGET_COUNT
         self.started = False
         self.time_var.set("0.000 秒")
-
-        # 清除所有特殊状态
         for i in range(self.GRID_SIZE):
             for j in range(self.GRID_SIZE):
                 self.cells[i][j].config(image=self.bg_img)
@@ -95,7 +97,6 @@ class ClickSpeedGame:
             [(i, j) for i in range(self.GRID_SIZE) for j in range(self.GRID_SIZE)],
             self.TARGET_COUNT
         )
-        # 显示可点击目标
         for x, y in self.target_positions:
             self.cells[x][y].config(image=self.active_img)
 

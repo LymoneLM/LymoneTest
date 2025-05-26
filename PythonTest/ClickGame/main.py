@@ -10,9 +10,16 @@ copy_right = "某某某_学号xxx制作"
 
 
 class ClickSpeedGame:
-    def __init__(self, root):
+    def __init__(self, root_window):
         # 初始化
-        self.root = root
+        self.game_frame = None
+        self.cells = None
+        self.info_frame = None
+        self.time_var = None
+        self.time_label = None
+        self.record_listbox = None
+
+        self.root = root_window
         self.root.title(f"{name} {copy_right}")
         self.root.iconbitmap(f"{assets_path}/icon.ico")
 

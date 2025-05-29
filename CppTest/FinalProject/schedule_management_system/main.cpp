@@ -137,7 +137,7 @@ private:
 
 public:
     // 从字符串解析时间
-    std::time_t parseTime(const std::string& datetime) const{
+    static std::time_t parseTime(const std::string& datetime){
         std::tm tm = {};
         std::istringstream ss(datetime);
         ss >> std::get_time(&tm, "%Y-%m-%d %H:%M");
@@ -146,7 +146,7 @@ public:
     }
 
     // 时间格式化
-    std::string formatTime(std::time_t time) const{
+    static std::string formatTime(const std::time_t time){
         char buffer[20];
         std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", std::localtime(&time));
         return buffer;
@@ -158,7 +158,7 @@ public:
     }
 
     // 删除日程
-    bool deleteSchedule(int index) {
+    bool deleteSchedule(const int index) {
         if (index < 0 || index >= static_cast<int>(schedules.size())) {
             return false;
         }

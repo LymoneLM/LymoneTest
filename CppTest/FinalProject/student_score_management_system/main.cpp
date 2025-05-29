@@ -9,7 +9,7 @@
 
 using namespace std;
 
-// 基类 - 数据项
+// 多态：虚拟基类
 class DataItem {
 public:
     virtual ~DataItem() = default;
@@ -23,17 +23,17 @@ class Student : public DataItem {
 private:
     string name;
     string id;
-    map<string, double> scores; // 科目-成绩映射
+    map<string, double> scores;
 
 public:
     Student(string n, string i) : name(n), id(i) {}
 
-    // 运算符重载：比较学生ID
+    // 运算符重载：比较学生ID（用于find）
     bool operator==(const Student& other) const {
         return id == other.id;
     }
 
-    // 添加/修改成绩
+    // 设置成绩
     void setScore(const string& subject, double score) {
         scores[subject] = score;
     }
@@ -92,12 +92,11 @@ class GradeForm {
 private:
     string formName;
     vector<Student> students;
-    vector<string> subjects; // 科目列表
+    vector<string> subjects;
 
 public:
     GradeForm(string name) : formName(name) {
-        // 默认科目
-        subjects = {"数学", "英语", "计算机"};
+        subjects = {};
     }
 
     // 添加学生
@@ -192,8 +191,8 @@ public:
         for (const auto& sub : subjects) {
             cout << setw(15) << sub;
         }
-        cout << setw(10) << "总分" << endl;
-        cout << string(80, '-') << endl;
+        cout << setw(15) << "总分" << endl;
+        cout << string(15*(subjects.size()+2), '-') << endl;
 
         // 显示学生数据
         for (const auto& s : students) {
@@ -206,13 +205,13 @@ public:
                     cout << setw(15) << "N/A";
                 }
             }
-            cout << setw(10) << s.getTotal() << endl;
+            cout << setw(15) << s.getTotal() << endl;
         }
 
         // 显示平均分
         if (showAverage && !students.empty()) {
-            cout << string(80, '-') << endl;
-            cout << left << setw(30) << "平均分";
+            cout << string(15*(subjects.size()+2), '-') << endl;
+            cout << left << setw(30) << "平均分"; // 独占姓名槽+学号槽长度
             for (const auto& sub : subjects) {
                 double total = 0.0;
                 int count = 0;
@@ -267,14 +266,14 @@ public:
             return;
         }
 
-        // 写入表头
+        // 表头
         file << "姓名,学号";
         for (const auto& sub : subjects) {
             file << "," << sub;
         }
         file << endl;
 
-        // 写入数据
+        // 数据
         for (const auto& s : students) {
             file << s.toCSV() << endl;
         }
@@ -295,7 +294,7 @@ public:
         subjects.clear();
 
         string line;
-        // 读取表头
+        // 表头
         if (getline(file, line)) {
             stringstream ss(line);
             string cell;
@@ -311,7 +310,7 @@ public:
             }
         }
 
-        // 读取数据行
+        // 数据
         while (getline(file, line)) {
             stringstream ss(line);
             string cell;
@@ -384,6 +383,7 @@ public:
     GradeForm* getForm(const string& name) {
         int index = findFormIndex(name);
         if (index != -1) {
+            // 这里传回指针比较好，不宜用find传回迭代器
             return &forms[index];
         }
         return nullptr;
@@ -413,6 +413,7 @@ void displayMainMenu() {
     cout << "\n5. 从CSV导入";
     cout << "\n6. 导出到CSV";
     cout << "\n0. 退出";
+    cout << "\n=========================";
     cout << "\n请选择操作: ";
 }
 
@@ -428,20 +429,18 @@ void displayFormMenu() {
     cout << "\n7. 展示表单";
     cout << "\n8. 排序展示";
     cout << "\n0. 返回主菜单";
+    cout << "\n==================";
     cout << "\n请选择操作: ";
 }
 
 int main() {
     GradeSystem system;
-    string currentForm;
 
     while (true) {
         displayMainMenu();
         int choice;
         cin >> choice;
-
         if (choice == 0) break;
-
         switch (choice) {
             case 1: { // 创建表单
                 string name;
@@ -458,32 +457,27 @@ int main() {
                 break;
             }
             case 3: { // 管理表单
-                string name;
+                string sheet_name;
                 cout << "输入要管理的表单名称: ";
-                cin >> name;
-                GradeForm* form = system.getForm(name);
+                cin >> sheet_name;
+                GradeForm* form = system.getForm(sheet_name);
                 if (!form) {
                     cout << "表单不存在！" << endl;
                     break;
                 }
-                currentForm = name;
-
-                // 表单管理子菜单
                 while (true) {
                     displayFormMenu();
                     int formChoice;
                     cin >> formChoice;
-
                     if (formChoice == 0) break;
-
                     switch (formChoice) {
                         case 1: { // 添加学生
-                            string name, id;
+                            string stu_name, id;
                             cout << "输入学生姓名: ";
-                            cin >> name;
+                            cin >> stu_name;
                             cout << "输入学生学号: ";
                             cin >> id;
-                            form->addStudent(Student(name, id));
+                            form->addStudent(Student(stu_name, id));
                             break;
                         }
                         case 2: { // 删除学生

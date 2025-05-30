@@ -8,23 +8,23 @@
 #include <iomanip>
 #include <map>
 
-class ScheduleA {
+class Schedule {
 protected:
     std::string leixing;
     std::string xinxi;
     std::time_t shijian;
 
 public:
-    ScheduleA(const std::string& a, const std::string& b, std::time_t c)
+    Schedule(const std::string& a, const std::string& b, std::time_t c)
         : leixing(a), xinxi(b), shijian(c) {}
 
-    virtual ~ScheduleA() = default;
+    virtual ~Schedule() = default;
 
-    bool operator<(const ScheduleA& aa) const {
+    bool operator<(const Schedule& aa) const {
         return shijian < aa.shijian;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const ScheduleA& ss) {
+    friend std::ostream& operator<<(std::ostream& os, const Schedule& ss) {
         char bf[20];
         std::strftime(bf, sizeof(bf), "%Y-%m-%d %H:%M", std::localtime(&ss.shijian));
         os << "[" << ss.leixing << "] " << bf << " - " << ss.xinxi;
@@ -41,12 +41,12 @@ public:
     std::string getX() const { return xinxi; }
 };
 
-class MeetingA : public ScheduleA {
+class Meeting : public Schedule {
     std::string didian;
 
 public:
-    MeetingA(const std::string& a, std::time_t b, const std::string& c)
-        : ScheduleA("会议", a, b), didian(c) {}
+    Meeting(const std::string& a, std::time_t b, const std::string& c)
+        : Schedule("会议", a, b), didian(c) {}
 
     void xq(std::ostream& os) const override {
         os << " (地点: " << didian << ")";
@@ -68,12 +68,12 @@ public:
     }
 };
 
-class ReminderA : public ScheduleA {
+class Reminder : public Schedule {
     std::string pinlv;
 
 public:
-    ReminderA(const std::string& a, std::time_t b, const std::string& c)
-        : ScheduleA("提醒", a, b), pinlv(c) {}
+    Reminder(const std::string& a, std::time_t b, const std::string& c)
+        : Schedule("提醒", a, b), pinlv(c) {}
 
     void xq(std::ostream& os) const override {
         os << " (频率: " << pinlv << ")";
@@ -95,12 +95,12 @@ public:
     }
 };
 
-class TaskA : public ScheduleA {
+class Task : public Schedule {
     std::string youxianji;
 
 public:
-    TaskA(const std::string& a, std::time_t b, const std::string& c)
-        : ScheduleA("任务", a, b), youxianji(c) {}
+    Task(const std::string& a, std::time_t b, const std::string& c)
+        : Schedule("任务", a, b), youxianji(c) {}
 
     void xq(std::ostream& os) const override {
         os << " (优先级: " << youxianji << ")";
@@ -122,9 +122,9 @@ public:
     }
 };
 
-class ManagerA {
+class Manager {
 private:
-    std::vector<std::unique_ptr<ScheduleA>> rcb;
+    std::vector<std::unique_ptr<Schedule>> rcb;
 
 public:
     static std::time_t parseT(const std::string& dt){
@@ -141,7 +141,7 @@ public:
         return bf;
     }
 
-    void addS(std::unique_ptr<ScheduleA> s) {
+    void addS(std::unique_ptr<Schedule> s) {
         rcb.push_back(std::move(s));
     }
 
@@ -153,10 +153,10 @@ public:
         return true;
     }
 
-    std::vector<ScheduleA*> findS(const std::string& d = "",
+    std::vector<Schedule*> findS(const std::string& d = "",
                                          std::time_t s1 = 0,
                                          std::time_t s2 = 0) {
-        std::vector<ScheduleA*> res;
+        std::vector<Schedule*> res;
 
         for (auto& r : rcb) {
             bool m = true;
@@ -188,11 +188,11 @@ public:
         std::string tp = rcb[idx]->getL();
 
         if (tp == "会议") {
-            rcb[idx] = std::make_unique<MeetingA>(ct, nt, sp);
+            rcb[idx] = std::make_unique<Meeting>(ct, nt, sp);
         } else if (tp == "提醒") {
-            rcb[idx] = std::make_unique<ReminderA>(ct, nt, sp);
+            rcb[idx] = std::make_unique<Reminder>(ct, nt, sp);
         } else if (tp == "任务") {
-            rcb[idx] = std::make_unique<TaskA>(ct, nt, sp);
+            rcb[idx] = std::make_unique<Task>(ct, nt, sp);
         }
 
         return true;
@@ -271,15 +271,15 @@ public:
 
                 std::time_t t = static_cast<std::time_t>(std::stoll(ff["time"]));
                 if (ff["type"] == "会议") {
-                    rcb.push_back(std::make_unique<MeetingA>(
+                    rcb.push_back(std::make_unique<Meeting>(
                         ff["content"], t, ff["location"]
                     ));
                 } else if (ff["type"] == "提醒") {
-                    rcb.push_back(std::make_unique<ReminderA>(
+                    rcb.push_back(std::make_unique<Reminder>(
                         ff["content"], t, ff["frequency"]
                     ));
                 } else if (ff["type"] == "任务") {
-                    rcb.push_back(std::make_unique<TaskA>(
+                    rcb.push_back(std::make_unique<Task>(
                         ff["content"], t, ff["priority"]
                     ));
                 }
@@ -304,7 +304,7 @@ void showMenu() {
 }
 
 int main() {
-    ManagerA mgr;
+    Manager mgr;
     int ch;
     const std::string fn = "schedules.json";
 
@@ -354,11 +354,11 @@ int main() {
                 }
 
                 if (tp == "会议") {
-                    mgr.addS(std::make_unique<MeetingA>(ct, t, sp));
+                    mgr.addS(std::make_unique<Meeting>(ct, t, sp));
                 } else if (tp == "提醒") {
-                    mgr.addS(std::make_unique<ReminderA>(ct, t, sp));
+                    mgr.addS(std::make_unique<Reminder>(ct, t, sp));
                 } else {
-                    mgr.addS(std::make_unique<TaskA>(ct, t, sp));
+                    mgr.addS(std::make_unique<Task>(ct, t, sp));
                 }
 
                 std::cout << "日程添加成功!\n";
@@ -385,7 +385,7 @@ int main() {
                 std::cin >> qtype;
                 std::cin.ignore();
 
-                std::vector<ScheduleA*> res;
+                std::vector<Schedule*> res;
 
                 if (qtype == 1) {
                     std::string d;
@@ -445,7 +445,7 @@ int main() {
                 std::cout << "输入新特定信息 (直接回车保持原信息): ";
                 std::getline(std::cin, sp);
 
-                std::vector<ScheduleA*> tmp = mgr.findS();
+                std::vector<Schedule*> tmp = mgr.findS();
                 if (mgr.modS(idx,
                     ct.empty() ? tmp[idx]->getX() : ct,
                     dt.empty() ? mgr.formatT(tmp[idx]->getT()) : dt,

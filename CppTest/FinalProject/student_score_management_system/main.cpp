@@ -9,273 +9,266 @@
 
 using namespace std;
 
-// 数据项抽象基类
-class DataItem {
+class shujuxiang {
 public:
-    virtual ~DataItem() {}
-    virtual void show() const = 0;
-    virtual string csvFormat() const = 0;
-    virtual bool contains(const string& term) const = 0;
+    virtual ~shujuxiang() {}
+    virtual void xianshi() const = 0;
+    virtual string geshihuacsv() const = 0;
+    virtual bool baohan(const string& s) const = 0;
 };
 
-// 学生成绩类
-class Student : public DataItem {
+class xuesheng : public shujuxiang {
 private:
-    string fullName;
-    string studentID;
-    map<string, double> grades;
+    string xingming;
+    string xuehao;
+    map<string, double> chengji;
 
 public:
-    Student(string name, string id) : fullName(name), studentID(id) {}
+    xuesheng(string m, string h) : xingming(m), xuehao(h) {}
 
-    // 比较运算符重载用于find
-    bool operator==(const Student& other) const {
-        return studentID == other.studentID;
+    bool operator==(const xuesheng& o) const {
+        return xuehao == o.xuehao;
     }
 
-    void updateGrade(const string& subject, double score) {
-        grades[subject] = score;
+    void xiugaicj(const string& k, double f) {
+        chengji[k] = f;
     }
 
-    void removeSubjectGrade(const string& subject) {
-        grades.erase(subject);
+    void shanchukm(const string& k) {
+        chengji.erase(k);
     }
 
-    double calculateTotal() const {
-        double sum = 0.0;
-        for (const auto& g : grades) {
-            sum += g.second;
+    double jisuanzf() const {
+        double z = 0.0;
+        for (const auto& g : chengji) {
+            z += g.second;
         }
-        return sum;
+        return z;
     }
 
-    double getSubjectScore(const string& subject) const {
-        auto it = grades.find(subject);
-        return (it != grades.end()) ? it->second : -1.0;
+    double huodecj(const string& k) const {
+        auto it = chengji.find(k);
+        return (it != chengji.end()) ? it->second : -1.0;
     }
 
-    void show() const override {
-        cout << left << setw(15) << fullName << setw(15) << studentID;
-        for (const auto& g : grades) {
+    void xianshi() const override {
+        cout << left << setw(15) << xingming << setw(15) << xuehao;
+        for (const auto& g : chengji) {
             cout << setw(10) << g.first << ":" << setw(5) << g.second;
         }
-        cout << "总分:" << setw(6) << calculateTotal() << endl;
+        cout << "总分:" << setw(6) << jisuanzf() << endl;
     }
 
-    string csvFormat() const override {
+    string geshihuacsv() const override {
         ostringstream oss;
-        oss << fullName << "," << studentID;
-        for (const auto& g : grades) {
+        oss << xingming << "," << xuehao;
+        for (const auto& g : chengji) {
             oss << "," << g.second;
         }
         return oss.str();
     }
 
-    bool contains(const string& term) const override {
-        return fullName.find(term) != string::npos || studentID.find(term) != string::npos;
+    bool baohan(const string& s) const override {
+        return xingming.find(s) != string::npos || xuehao.find(s) != string::npos;
     }
 
-    const string& getName() const { return fullName; }
-    const string& getID() const { return studentID; }
-    const map<string, double>& getGrades() const { return grades; }
+    const string& huodeming() const { return xingming; }
+    const string& huodehao() const { return xuehao; }
+    const map<string, double>& huodecjmap() const { return chengji; }
 };
 
-// 成绩表单类
-class GradeSheet {
+class chengjidan {
 private:
-    string sheetTitle;
-    vector<Student> students;
-    vector<string> subjectsList;
+    string biaotiming;
+    vector<xuesheng> xueshenglist;
+    vector<string> kemulist;
 
 public:
-    GradeSheet(string title) : sheetTitle(title) {}
+    chengjidan(string bt) : biaotiming(bt) {}
 
-    void addStudentRecord(const Student& student) {
-        auto it = find(students.begin(), students.end(), student);
-        if (it != students.end()) {
-            cout << "错误：学号 " << student.getID() << " 已存在！" << endl;
+    void tianjiaxuesheng(const xuesheng& xs) {
+        auto it = find(xueshenglist.begin(), xueshenglist.end(), xs);
+        if (it != xueshenglist.end()) {
+            cout << "错误：学号 " << xs.huodehao() << " 已存在！" << endl;
             return;
         }
-        students.push_back(student);
-        cout << "已添加学生: " << student.getName() << endl;
+        xueshenglist.push_back(xs);
+        cout << "已添加学生: " << xs.huodeming() << endl;
     }
 
-    void removeStudent(const string& id) {
-        auto it = find_if(students.begin(), students.end(),
-                         [&](const Student& s) { return s.getID() == id; });
+    void shanchuxs(const string& h) {
+        auto it = find_if(xueshenglist.begin(), xueshenglist.end(),
+                         [&](const xuesheng& s) { return s.huodehao() == h; });
 
-        if (it != students.end()) {
-            cout << "删除学生: " << it->getName() << " (" << it->getID() << ")" << endl;
-            students.erase(it);
+        if (it != xueshenglist.end()) {
+            cout << "删除学生: " << it->huodeming() << " (" << it->huodehao() << ")" << endl;
+            xueshenglist.erase(it);
         } else {
-            cout << "未找到学号: " << id << endl;
+            cout << "未找到学号: " << h << endl;
         }
     }
 
-    void searchStudents(const string& term) {
-        bool found = false;
-        for (const auto& s : students) {
-            if (s.contains(term)) {
-                s.show();
-                found = true;
+    void chaxunxs(const string& s) {
+        bool zhaodao = false;
+        for (const auto& xs : xueshenglist) {
+            if (xs.baohan(s)) {
+                xs.xianshi();
+                zhaodao = true;
             }
         }
-        if (!found) {
+        if (!zhaodao) {
             cout << "未找到匹配的学生记录" << endl;
         }
     }
 
-    void updateGrade(const string& id, const string& subject, double score) {
-        bool studentFound = false;
+    void genggaicj(const string& h, const string& k, double f) {
+        bool zhaodao = false;
 
-        for (auto& s : students) {
-            if (s.getID() == id) {
-                studentFound = true;
-                auto subIt = find(subjectsList.begin(), subjectsList.end(), subject);
-                if (subIt != subjectsList.end()) {
-                    s.updateGrade(subject, score);
-                    cout << "已更新 " << s.getName() << " 的" << subject << "成绩: " << score << endl;
+        for (auto& xs : xueshenglist) {
+            if (xs.huodehao() == h) {
+                zhaodao = true;
+                auto subIt = find(kemulist.begin(), kemulist.end(), k);
+                if (subIt != kemulist.end()) {
+                    xs.xiugaicj(k, f);
+                    cout << "已更新 " << xs.huodeming() << " 的" << k << "成绩: " << f << endl;
                 } else {
-                    cout << "错误：科目 '" << subject << "' 不存在" << endl;
+                    cout << "错误：科目 '" << k << "' 不存在" << endl;
                 }
                 break;
             }
         }
 
-        if (!studentFound) {
-            cout << "未找到学号: " << id << endl;
+        if (!zhaodao) {
+            cout << "未找到学号: " << h << endl;
         }
     }
 
-    void addSubject(const string& subject) {
-        if (find(subjectsList.begin(), subjectsList.end(), subject) != subjectsList.end()) {
+    void tianjiakm(const string& k) {
+        if (find(kemulist.begin(), kemulist.end(), k) != kemulist.end()) {
             cout << "科目已存在！" << endl;
             return;
         }
-        subjectsList.push_back(subject);
+        kemulist.push_back(k);
 
-        // 初始化
-        for (auto& s : students) {
-            s.updateGrade(subject, 0.0);
+        for (auto& xs : xueshenglist) {
+            xs.xiugaicj(k, 0.0);
         }
-        cout << "已添加科目: " << subject << endl;
+        cout << "已添加科目: " << k << endl;
     }
 
-    void removeSubject(const string& subject) {
-        auto it = find(subjectsList.begin(), subjectsList.end(), subject);
-        if (it != subjectsList.end()) {
-            subjectsList.erase(it);
-            for (auto& s : students) {
-                s.removeSubjectGrade(subject);
+    void shanchukm(const string& k) {
+        auto it = find(kemulist.begin(), kemulist.end(), k);
+        if (it != kemulist.end()) {
+            kemulist.erase(it);
+            for (auto& xs : xueshenglist) {
+                xs.shanchukm(k);
             }
-            cout << "已移除科目: " << subject << endl;
+            cout << "已移除科目: " << k << endl;
         } else {
             cout << "错误：科目不存在" << endl;
         }
     }
 
-    void display(bool showAvg = true) {
-        cout << "\n=== " << sheetTitle << " ===" << endl;
+    void xianshibd(bool showAvg = true) {
+        cout << "\n=== " << biaotiming << " ===" << endl;
         cout << left << setw(15) << "姓名" << setw(15) << "学号";
-        for (const auto& sub : subjectsList) {
-            cout << setw(15) << sub;
+        for (const auto& km : kemulist) {
+            cout << setw(15) << km;
         }
         cout << setw(15) << "总分" << endl;
-        cout << string(15*(subjectsList.size()+2), '-') << endl;
+        cout << string(15*(kemulist.size()+2), '-') << endl;
 
-        for (const auto& s : students) {
-            cout << left << setw(15) << s.getName() << setw(15) << s.getID();
-            for (const auto& sub : subjectsList) {
-                double score = s.getSubjectScore(sub);
-                if (score >= 0) {
-                    cout << setw(15) << score;
+        for (const auto& xs : xueshenglist) {
+            cout << left << setw(15) << xs.huodeming() << setw(15) << xs.huodehao();
+            for (const auto& km : kemulist) {
+                double f = xs.huodecj(km);
+                if (f >= 0) {
+                    cout << setw(15) << f;
                 } else {
                     cout << setw(15) << "N/A";
                 }
             }
-            cout << setw(15) << s.calculateTotal() << endl;
+            cout << setw(15) << xs.jisuanzf() << endl;
         }
 
-        if (showAvg && !students.empty()) {
-            cout << string(15*(subjectsList.size()+2), '-') << endl;
+        if (showAvg && !xueshenglist.empty()) {
+            cout << string(15*(kemulist.size()+2), '-') << endl;
             cout << left << setw(30) << "平均分";
-            for (const auto& sub : subjectsList) {
-                double total = 0.0;
-                int count = 0;
-                for (const auto& s : students) {
-                    double score = s.getSubjectScore(sub);
-                    if (score >= 0) {
-                        total += score;
-                        count++;
+            for (const auto& km : kemulist) {
+                double z = 0.0;
+                int gs = 0;
+                for (const auto& xs : xueshenglist) {
+                    double f = xs.huodecj(km);
+                    if (f >= 0) {
+                        z += f;
+                        gs++;
                     }
                 }
-                double avg = (count > 0) ? total / count : 0.0;
-                cout << setw(15) << fixed << setprecision(1) << avg;
+                double pj = (gs > 0) ? z / gs : 0.0;
+                cout << setw(15) << fixed << setprecision(1) << pj;
             }
             cout << endl;
         }
     }
 
-    void sortAndShow(const string& field, bool ascending = true) {
-        // 排序
-        if (field == "学号") {
-            sort(students.begin(), students.end(),
-                [&](const Student& a, const Student& b) {
-                    return ascending ? a.getID() < b.getID() : a.getID() > b.getID();
+    void paixuxianshi(const string& z, bool asc = true) {
+        if (z == "学号") {
+            sort(xueshenglist.begin(), xueshenglist.end(),
+                [&](const xuesheng& a, const xuesheng& b) {
+                    return asc ? a.huodehao() < b.huodehao() : a.huodehao() > b.huodehao();
                 });
-        } else if (field == "姓名") {
-            sort(students.begin(), students.end(),
-                [&](const Student& a, const Student& b) {
-                    return ascending ? a.getName() < b.getName() : a.getName() > b.getName();
+        } else if (z == "姓名") {
+            sort(xueshenglist.begin(), xueshenglist.end(),
+                [&](const xuesheng& a, const xuesheng& b) {
+                    return asc ? a.huodeming() < b.huodeming() : a.huodeming() > b.huodeming();
                 });
-        } else if (field == "总分") {
-            sort(students.begin(), students.end(),
-                [&](const Student& a, const Student& b) {
-                    return ascending ? a.calculateTotal() < b.calculateTotal()
-                                     : a.calculateTotal() > b.calculateTotal();
+        } else if (z == "总分") {
+            sort(xueshenglist.begin(), xueshenglist.end(),
+                [&](const xuesheng& a, const xuesheng& b) {
+                    return asc ? a.jisuanzf() < b.jisuanzf()
+                                     : a.jisuanzf() > b.jisuanzf();
                 });
         } else {
-            // 科目
-            sort(students.begin(), students.end(),
-                [&](const Student& a, const Student& b) {
-                    double scoreA = a.getSubjectScore(field);
-                    double scoreB = b.getSubjectScore(field);
-                    return ascending ? scoreA < scoreB : scoreA > scoreB;
+            sort(xueshenglist.begin(), xueshenglist.end(),
+                [&](const xuesheng& a, const xuesheng& b) {
+                    double fa = a.huodecj(z);
+                    double fb = b.huodecj(z);
+                    return asc ? fa < fb : fa > fb;
                 });
         }
-        display(true);
+        xianshibd(true);
     }
 
-    void exportToCSV(const string& filename) {
-        ofstream outFile(filename);
+    void daochucsv(const string& w) {
+        ofstream outFile(w);
         if (!outFile) {
-            cerr << "文件打开失败: " << filename << endl;
+            cerr << "文件打开失败: " << w << endl;
             return;
         }
 
         outFile << "姓名,学号";
-        for (const auto& sub : subjectsList) {
-            outFile << "," << sub;
+        for (const auto& km : kemulist) {
+            outFile << "," << km;
         }
         outFile << endl;
 
-        for (const auto& s : students) {
-            outFile << s.csvFormat() << endl;
+        for (const auto& xs : xueshenglist) {
+            outFile << xs.geshihuacsv() << endl;
         }
 
-        cout << "数据已导出到: " << filename << endl;
+        cout << "数据已导出到: " << w << endl;
         outFile.close();
     }
 
-    void importFromCSV(const string& filename) {
-        ifstream inFile(filename);
+    void daorucsv(const string& w) {
+        ifstream inFile(w);
         if (!inFile) {
-            cerr << "无法打开文件: " << filename << endl;
+            cerr << "无法打开文件: " << w << endl;
             return;
         }
 
-        students.clear();
-        subjectsList.clear();
+        xueshenglist.clear();
+        kemulist.clear();
 
         string line;
 
@@ -293,8 +286,7 @@ public:
                 return;
             }
 
-            // 姓名\学号+N*科目
-            subjectsList = vector<string>(headers.begin() + 2, headers.end());
+            kemulist = vector<string>(headers.begin() + 2, headers.end());
         }
 
         while (getline(inFile, line)) {
@@ -310,34 +302,33 @@ public:
 
             if (rowData.size() < 2) continue;
 
-            Student s(rowData[0], rowData[1]);
-            for (int i = 0; i < subjectsList.size() && i + 2 < rowData.size(); i++) {
+            xuesheng xs(rowData[0], rowData[1]);
+            for (int i = 0; i < kemulist.size() && i + 2 < rowData.size(); i++) {
                 try {
-                    double score = stod(rowData[i + 2]);
-                    s.updateGrade(subjectsList[i], score);
+                    double f = stod(rowData[i + 2]);
+                    xs.xiugaicj(kemulist[i], f);
                 } catch (...) {
                     cerr << "成绩转换错误: " << rowData[i+2] << endl;
                 }
             }
-            students.push_back(s);
+            xueshenglist.push_back(xs);
         }
 
-        cout << "已导入 " << students.size() << " 条记录" << endl;
+        cout << "已导入 " << xueshenglist.size() << " 条记录" << endl;
         inFile.close();
     }
 
-    const string& getTitle() const { return sheetTitle; }
-    const vector<string>& getSubjects() const { return subjectsList; }
+    const string& huodebt() const { return biaotiming; }
+    const vector<string>& huodekm() const { return kemulist; }
 };
 
-// 成绩管理系统
-class GradeManager {
+class guanliqi {
 private:
-    vector<GradeSheet> sheets;
+    vector<chengjidan> danlist;
 
-    int findSheetIndex(const string& title) const{
-        for (int i = 0; i < sheets.size(); i++) {
-            if (sheets[i].getTitle() == title) {
+    int zhaobiao(const string& bt) const{
+        for (int i = 0; i < danlist.size(); i++) {
+            if (danlist[i].huodebt() == bt) {
                 return i;
             }
         }
@@ -345,48 +336,47 @@ private:
     }
 
 public:
-    void createSheet(const string& title) {
-        if (findSheetIndex(title) != -1) {
+    void chuangjiandan(const string& bt) {
+        if (zhaobiao(bt) != -1) {
             cout << "表单已存在！" << endl;
             return;
         }
-        sheets.emplace_back(title);
-        cout << "已创建表单: " << title << endl;
+        danlist.emplace_back(bt);
+        cout << "已创建表单: " << bt << endl;
     }
 
-    void removeSheet(const string& title) {
-        int index = findSheetIndex(title);
-        if (index != -1) {
-            sheets.erase(sheets.begin() + index);
-            cout << "已删除表单: " << title << endl;
+    void shanchudan(const string& bt) {
+        int idx = zhaobiao(bt);
+        if (idx != -1) {
+            danlist.erase(danlist.begin() + idx);
+            cout << "已删除表单: " << bt << endl;
         } else {
             cout << "表单不存在！" << endl;
         }
     }
 
-    GradeSheet* getSheet(const string& title) {
-        int index = findSheetIndex(title);
-        if (index != -1) {
-            return &sheets[index];
+    chengjidan* huodedan(const string& bt) {
+        int idx = zhaobiao(bt);
+        if (idx != -1) {
+            return &danlist[idx];
         }
         return nullptr;
     }
 
-    void listSheets() {
-        if (sheets.empty()) {
+    void liebiaodan() {
+        if (danlist.empty()) {
             cout << "当前没有表单" << endl;
             return;
         }
 
         cout << "\n表单列表:" << endl;
-        for (const auto& sheet : sheets) {
-            cout << "- " << sheet.getTitle() << " (" << sheet.getSubjects().size() << "个科目)" << endl;
+        for (const auto& d : danlist) {
+            cout << "- " << d.huodebt() << " (" << d.huodekm().size() << "个科目)" << endl;
         }
     }
 };
 
-// 菜单系统
-void showMainMenu() {
+void xianshicaidan() {
     cout << "\n===== 学生成绩管理系统 =====";
     cout << "\n1. 新建表单";
     cout << "\n2. 删除表单";
@@ -399,7 +389,7 @@ void showMainMenu() {
     cout << "\n请选择: ";
 }
 
-void showSheetMenu() {
+void xianshibiaodan() {
     cout << "\n===== 表单操作 =====";
     cout << "\n1. 添加学生";
     cout << "\n2. 删除学生";
@@ -415,109 +405,109 @@ void showSheetMenu() {
 }
 
 int main() {
-    GradeManager manager;
+    guanliqi glq;
 
     while (true) {
-        showMainMenu();
-        int choice;
-        cin >> choice;
+        xianshicaidan();
+        int xz;
+        cin >> xz;
 
-        if (choice == 0) {
+        if (xz == 0) {
             cout << "系统已退出" << endl;
             break;
         }
 
-        switch (choice) {
-            case 1: { // 新建表单
-                string title;
+        switch (xz) {
+            case 1: {
+                string bt;
                 cout << "输入表单名称: ";
-                cin >> title;
-                manager.createSheet(title);
+                cin >> bt;
+                glq.chuangjiandan(bt);
                 break;
             }
-            case 2: { // 删除表单
-                string title;
+            case 2: {
+                string bt;
                 cout << "输入要删除的表单名称: ";
-                cin >> title;
-                manager.removeSheet(title);
+                cin >> bt;
+                glq.shanchudan(bt);
                 break;
             }
-            case 3: { // 管理表单
-                string title;
+            case 3: {
+                string bt;
                 cout << "输入表单名称: ";
-                cin >> title;
-                GradeSheet* sheet = manager.getSheet(title);
+                cin >> bt;
+                chengjidan* d = glq.huodedan(bt);
 
-                if (!sheet) {
+                if (!d) {
                     cout << "表单不存在！" << endl;
                     break;
                 }
 
                 while (true) {
-                    showSheetMenu();
-                    int sheetChoice;
-                    cin >> sheetChoice;
+                    xianshibiaodan();
+                    int bdxz;
+                    cin >> bdxz;
 
-                    if (sheetChoice == 0) break;
+                    if (bdxz == 0) break;
 
-                    switch (sheetChoice) {
-                        case 1: { // 添加学生
-                            string name, id;
+                    switch (bdxz) {
+                        case 1: {
+                            string m, h;
                             cout << "学生姓名: ";
-                            cin >> name;
+                            cin >> m;
                             cout << "学生学号: ";
-                            cin >> id;
-                            sheet->addStudentRecord(Student(name, id));
+                            cin >> h;
+                            d->tianjiaxuesheng(xuesheng(m, h));
                             break;
                         }
-                        case 2: { // 删除学生
-                            string id;
+                        case 2: {
+                            string h;
                             cout << "输入学号: ";
-                            cin >> id;
-                            sheet->removeStudent(id);
+                            cin >> h;
+                            d->shanchuxs(h);
                             break;
                         }
-                        case 3: { // 查找学生
-                            string term;
+                        case 3: {
+                            string s;
                             cout << "输入姓名或学号: ";
-                            cin >> term;
-                            sheet->searchStudents(term);
+                            cin >> s;
+                            d->chaxunxs(s);
                             break;
                         }
-                        case 4: { // 修改成绩
-                            string id, subject;
-                            double score;
+                        case 4: {
+                            string h, k;
+                            double f;
                             cout << "学生学号: ";
-                            cin >> id;
+                            cin >> h;
                             cout << "科目名称: ";
-                            cin >> subject;
+                            cin >> k;
                             cout << "新成绩: ";
-                            cin >> score;
-                            sheet->updateGrade(id, subject, score);
+                            cin >> f;
+                            d->genggaicj(h, k, f);
                             break;
                         }
-                        case 5: { // 添加科目
-                            string subject;
+                        case 5: {
+                            string k;
                             cout << "新科目名称: ";
-                            cin >> subject;
-                            sheet->addSubject(subject);
+                            cin >> k;
+                            d->tianjiakm(k);
                             break;
                         }
-                        case 6: { // 删除科目
-                            string subject;
+                        case 6: {
+                            string k;
                             cout << "要删除的科目: ";
-                            cin >> subject;
-                            sheet->removeSubject(subject);
+                            cin >> k;
+                            d->shanchukm(k);
                             break;
                         }
                         case 7:
-                            sheet->display(true);
+                            d->xianshibd(true);
                             break;
                         case 8: {
-                            string field;
+                            string z;
                             cout << "排序依据(姓名/学号/总分/科目): ";
-                            cin >> field;
-                            sheet->sortAndShow(field);
+                            cin >> z;
+                            d->paixuxianshi(z);
                             break;
                         }
                         default:
@@ -527,33 +517,33 @@ int main() {
                 break;
             }
             case 4:
-                manager.listSheets();
+                glq.liebiaodan();
                 break;
-            case 5: { // 导入CSV
-                string title, filename;
+            case 5: {
+                string bt, w;
                 cout << "表单名称: ";
-                cin >> title;
+                cin >> bt;
                 cout << "CSV文件名: ";
-                cin >> filename;
-                manager.createSheet(title);
-                GradeSheet* sheet = manager.getSheet(title);
-                if (sheet) {
-                    sheet->importFromCSV(filename);
+                cin >> w;
+                glq.chuangjiandan(bt);
+                chengjidan* d = glq.huodedan(bt);
+                if (d) {
+                    d->daorucsv(w);
                 }
                 break;
             }
-            case 6: { // 导出CSV
-                string title, filename;
+            case 6: {
+                string bt, w;
                 cout << "表单名称: ";
-                cin >> title;
-                GradeSheet* sheet = manager.getSheet(title);
-                if (!sheet) {
+                cin >> bt;
+                chengjidan* d = glq.huodedan(bt);
+                if (!d) {
                     cout << "表单不存在！" << endl;
                     break;
                 }
                 cout << "导出文件名: ";
-                cin >> filename;
-                sheet->exportToCSV(filename);
+                cin >> w;
+                d->daochucsv(w);
                 break;
             }
             default:

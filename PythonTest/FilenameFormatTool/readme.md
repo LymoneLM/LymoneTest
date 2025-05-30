@@ -4,7 +4,9 @@
 
 ### 需求分析
 
-使用Python编写一个文件名格式化工具脚本，可以批量重命名指定文件夹下的文件。处理前可预览，确认后执行。
+使用Python编写一个文件名格式化工具脚本，可以批量重命名指定文件夹下的文件；处理前可预览，确认后执行。
+
+### 功能设计
 
 1. **基础形态**：纯命令行工具，所有功能通过附加参数实现。
 2. **操作范围**：
@@ -43,86 +45,83 @@
    - 默认保留原始文件的属性（元数据）。
    - 提供参数选择是否保留原始属性：若不保留，则将文件的创建时间、修改时间更新为当前操作时间，并清空其他属性数据。
 
-### 其他备注
-
-1. 添加必要的注释。
-2. 参数help使用中文。
-
 ## 使用示例
 
 ### -help
 
-usage: fft.py [-h] [--dry-run] [-r] [-e EXTENSIONS] [--regex REGEX] [--prefix PREFIX] [--suffix SUFFIX] [--template TEMPLATE] [--date-format DATE_FORMAT]
-              [--size-unit {B,KB,MB,GB}] [--hash-algo {md5,sha1,sha256}] [--hash-length HASH_LENGTH] [--num-type {num,roman,alpha}] [--num-digits NUM_DIGITS]
-              [--sort-by {name,mtime,ctime,size}] [--sort-order {asc,desc}] [-o OUTPUT_DIR] [--no-preserve] [--reverse] [--log-file LOG_FILE]
-              [target]
+> usage: fft.py [-h] [--dry-run] [-r] [-e EXTENSIONS] [--regex REGEX] [--prefix PREFIX] [--suffix SUFFIX]
+>               [--template TEMPLATE] [--date-format DATE_FORMAT] [--size-unit {B,KB,MB,GB}]
+>               [--hash-algo {md5,sha1,sha256}] [--hash-length HASH_LENGTH] [--num-type {num,roman,alpha}]   
+>               [--num-digits NUM_DIGITS] [--sort-by {name,mtime,ctime,size}] [--sort-order {asc,desc}]      
+>               [-o OUTPUT_DIR] [--no-preserve] [--reverse] [--log-file LOG_FILE]
+>               [target]
+>
+> 文件名格式化工具
+>
+> positional arguments:
+>   target                目标目录路径
+>
+> options:
+>   -h, --help            show this help message and exit
+>   --dry-run             仅预览不执行
+>   -r, --recursive       递归处理子目录
+>   -e, --extensions EXTENSIONS
+>                         文件扩展名过滤(逗号分隔，如: jpg,png)
+>   --regex REGEX         文件名正则表达式过滤
+>   --prefix PREFIX       文件名前缀
+>   --suffix SUFFIX       文件名后缀
+>   --template TEMPLATE   重命名模板
+>                         可用变量: {date}, {original_name}, {file_size}, {hash}, {num}
+>   --date-format DATE_FORMAT
+>                         日期格式(默认: %y%m%d)
+>   --size-unit {B,KB,MB,GB}
+>                         文件大小单位
+>   --hash-algo {md5,sha1,sha256}
+>                         哈希算法
+>   --hash-length HASH_LENGTH
+>                         哈希值长度
+>   --num-type {num,roman,alpha}
+>                         序号类型
+>   --num-digits NUM_DIGITS
+>                         序号位数(0为自动)
+>   --sort-by {name,mtime,ctime,size}
+>                         排序依据
+>   --sort-order {asc,desc}
+>                         排序顺序
+>   -o, --output-dir OUTPUT_DIR
+>                         输出目录(默认覆盖原文件)
+>   --no-preserve         不保留原始文件属性
+>   --reverse             逆向重命名操作
+>   --log-file LOG_FILE   用于逆向操作的日志文件
 
-文件名格式化工具
+### 参考命令
 
-positional arguments:
-  target                目标目录路径
+#### 1.基本重命名
 
-options:
-  -h, --help            show this help message and exit
-  --dry-run             仅预览不执行
-  -r, --recursive       递归处理子目录
-  -e, --extensions EXTENSIONS
-                        文件扩展名过滤(逗号分隔，如: jpg,png)
-  --regex REGEX         文件名正则表达式过滤
-  --prefix PREFIX       文件名前缀
-  --suffix SUFFIX       文件名后缀
-  --template TEMPLATE   重命名模板
-                        可用变量: {date}, {original_name}, {file_size}, {hash}, {num}
-  --date-format DATE_FORMAT
-                        日期格式(默认: %y%m%d)
-  --size-unit {B,KB,MB,GB}
-                        文件大小单位
-  --hash-algo {md5,sha1,sha256}
-                        哈希算法
-  --hash-length HASH_LENGTH
-                        哈希值长度
-  --num-type {num,roman,alpha}
-                        序号类型
-  --num-digits NUM_DIGITS
-                        序号位数(0为自动)
-  --sort-by {name,mtime,ctime,size}
-                        排序依据
-  --sort-order {asc,desc}
-                        排序顺序
-  -o, --output-dir OUTPUT_DIR
-                        输出目录(默认覆盖原文件)
-  --no-preserve         不保留原始文件属性
-  --reverse             逆向重命名操作
-  --log-file LOG_FILE   用于逆向操作的日志文件
-
-### 指令参考
-
-1. **基本重命名**
-
-```
+```bash
 python fft.py /path/to/files --prefix "vacation_" --suffix "_2023"
 ```
 
-2.**模板重命名**
+#### 2.模板重命名
 
-```
+```bash
 python fft.py /path/to/photos --template "{date}_{num}_{original_name}" --date-format "%Y%m%d" --num-type alpha
 ```
 
-3.**复杂操作**
+#### 3.正则筛选创建时间排序重命名
 
-```
+```bash
 python fft.py /path/to/data -r -e jpg,png --regex "IMG_\d+" --output-dir /sorted_photos --sort-by ctime --sort-order desc
 ```
 
-4.**预览模式**
+#### 4.纯预览模式
 
-```
+```bash
 python fft.py /path/to/files --template "{hash}_{original_name}" --hash-algo md5 --hash-length 8 --dry-run
 ```
 
-5.**逆向操作**
+#### 5.逆向操作
 
-```
+```bash
 python fft.py --reverse --log-file rename_20230531_123456.log --output-dir /original_files
 ```

@@ -10,307 +10,324 @@
 
 using namespace std;
 
-// 日志记录函数
-void logToFile(const string& operation, double result) {
-    ofstream logFile("shape_calculator.log", ios::app);
-    if (logFile.is_open()) {
-        time_t now = time(nullptr);
-        tm* ltm = localtime(&now);
-        logFile << "[" << put_time(ltm, "%Y-%m-%d %H:%M:%S") << "] "
-               << operation << ": " << fixed << setprecision(2) << result << endl;
-        logFile.close();
+// 日志函数
+void writelog(const string& what, double num) {
+    ofstream logfile("rilog.txt", ios::app);
+    if (logfile) {
+        time_t now = time(0);
+        tm* timenow = localtime(&now);
+        logfile << "[" << put_time(timenow, "%Y-%m-%d %H:%M:%S") << "] "
+                << what << ": " << fixed << setprecision(2) << num << endl;
     }
 }
 
 // 图形基类
-class Shape {
+class ShapeBase {
 public:
-    virtual double area() const = 0;
-    virtual double perimeter() const = 0;
-    virtual void print(ostream& os) const = 0;
-    virtual string getType() const = 0;
-    virtual ~Shape() = default;
+    virtual double mianji() const = 0;
+    virtual double zhouchang() const = 0;
+    virtual void showinfo(ostream& out) const = 0;
+    virtual string leixing() const = 0;
+    virtual ~ShapeBase() = default;
 };
 
-// 重载<<运算符用于输出图形信息
-ostream& operator<<(ostream& os, const Shape& shape) {
-    shape.print(os);
-    return os;
+// 输出运算符重载
+ostream& operator<<(ostream& out, const ShapeBase& s) {
+    s.showinfo(out);
+    return out;
 }
 
-// 重载+运算符用于面积相加
-double operator+(const Shape& a, const Shape& b) {
-    return a.area() + b.area();
+// 加法运算符重载
+double operator+(const ShapeBase& a, const ShapeBase& b) {
+    return a.mianji() + b.mianji();
 }
 
 // 圆形类
-class Circle : public Shape {
-    double radius;
+class RoundShape : public ShapeBase {
+    double banjing;  // 使用拼音变量名
 public:
-    Circle(double r) : radius(r) {
-        if (r <= 0) throw invalid_argument("半径必须大于0");
+    RoundShape(double r) : banjing(r) {
+        if (r <= 0) throw runtime_error("半径需>0");
     }
 
-    double area() const override {
-        return M_PI * radius * radius;
+    double mianji() const override {
+        return 3.1415926 * banjing * banjing;
     }
 
-    double perimeter() const override {
-        return 2 * M_PI * radius;
+    double zhouchang() const override {
+        return 2 * 3.1415926 * banjing;
     }
 
-    void print(ostream& os) const override {
-        os << "圆形 (半径=" << radius << ", 面积=" << area()
-           << ", 周长=" << perimeter() << ")";
+    void showinfo(ostream& out) const override {
+        out << "圆形 (半径=" << banjing << ", 面积=" << mianji()
+           << ", 周长=" << zhouchang() << ")";
     }
 
-    string getType() const override {
+    string leixing() const override {
         return "圆形";
     }
 };
 
 // 椭圆类
-class Ellipse : public Shape {
-    double semiMajor;
-    double semiMinor;
+class OvalShape : public ShapeBase {
+    double changzhou;  // 长轴
+    double duanzhou;   // 短轴
 public:
-    Ellipse(double a, double b) : semiMajor(a), semiMinor(b) {
-        if (a <= 0 || b <= 0) throw invalid_argument("半轴长度必须大于0");
+    OvalShape(double a, double b) : changzhou(a), duanzhou(b) {
+        if (a <= 0 || b <= 0) throw runtime_error("半轴需>0");
     }
 
-    double area() const override {
-        return M_PI * semiMajor * semiMinor;
+    double mianji() const override {
+        return 3.1415926 * changzhou * duanzhou;
     }
 
-    double perimeter() const override {
-        // 使用拉马努金近似公式
-        double h = pow((semiMajor - semiMinor), 2) / pow((semiMajor + semiMinor), 2);
-        return M_PI * (semiMajor + semiMinor) * (1 + (3*h)/(10 + sqrt(4 - 3*h)));
+    double zhouchang() const override {
+        double temp = pow((changzhou - duanzhou), 2) / pow((changzhou + duanzhou), 2);
+        return 3.1415926 * (changzhou + duanzhou) * (1 + (3*temp)/(10 + sqrt(4 - 3*temp)));
     }
 
-    void print(ostream& os) const override {
-        os << "椭圆 (长半轴=" << semiMajor << ", 短半轴=" << semiMinor
-           << ", 面积=" << area() << ", 周长≈" << perimeter() << ")";
+    void showinfo(ostream& out) const override {
+        out << "椭圆 (长轴=" << changzhou << ", 短轴=" << duanzhou
+           << ", 面积=" << mianji() << ", 周长≈" << zhouchang() << ")";
     }
 
-    string getType() const override {
+    string leixing() const override {
         return "椭圆";
     }
 };
 
 // 矩形类
-class Rectangle : public Shape {
-    double width;
-    double height;
+class RectShape : public ShapeBase {
+    double kuan;   // 宽
+    double gao;    // 高
 public:
-    Rectangle(double w, double h) : width(w), height(h) {
-        if (w <= 0 || h <= 0) throw invalid_argument("宽高必须大于0");
+    RectShape(double w, double h) : kuan(w), gao(h) {
+        if (w <= 0 || h <= 0) throw runtime_error("宽高需>0");
     }
 
-    double area() const override {
-        return width * height;
+    double mianji() const override {
+        return kuan * gao;
     }
 
-    double perimeter() const override {
-        return 2 * (width + height);
+    double zhouchang() const override {
+        return 2 * (kuan + gao);
     }
 
-    void print(ostream& os) const override {
-        os << "矩形 (宽=" << width << ", 高=" << height
-           << ", 面积=" << area() << ", 周长=" << perimeter() << ")";
+    void showinfo(ostream& out) const override {
+        out << "矩形 (宽=" << kuan << ", 高=" << gao
+           << ", 面积=" << mianji() << ", 周长=" << zhouchang() << ")";
     }
 
-    string getType() const override {
+    string leixing() const override {
         return "矩形";
     }
 };
 
 // 三角形类
-class Triangle : public Shape {
-    double a, b, c;
+class TriShape : public ShapeBase {
+    double bianA;  // 边A
+    double bianB;  // 边B
+    double bianC;  // 边C
 public:
-    Triangle(double s1, double s2, double s3) : a(s1), b(s2), c(s3) {
-        if (s1 <= 0 || s2 <= 0 || s3 <= 0)
-            throw invalid_argument("边长必须大于0");
-        if (s1+s2 <= s3 || s1+s3 <= s2 || s2+s3 <= s1)
-            throw invalid_argument("边长无法构成三角形");
+    TriShape(double a, double b, double c) : bianA(a), bianB(b), bianC(c) {
+        if (a <= 0 || b <= 0 || c <= 0)
+            throw runtime_error("边长需>0");
+        if (a+b <= c || a+c <= b || b+c <= a)
+            throw runtime_error("非三角形边长");
     }
 
-    double area() const override {
-        // 海伦公式
-        double s = perimeter() / 2;
-        return sqrt(s * (s - a) * (s - b) * (s - c));
+    double mianji() const override {
+        double s = (bianA + bianB + bianC) / 2;
+        return sqrt(s * (s - bianA) * (s - bianB) * (s - bianC));
     }
 
-    double perimeter() const override {
-        return a + b + c;
+    double zhouchang() const override {
+        return bianA + bianB + bianC;
     }
 
-    void print(ostream& os) const override {
-        os << "三角形 (边=" << a << "," << b << "," << c
-           << ", 面积=" << area() << ", 周长=" << perimeter() << ")";
+    void showinfo(ostream& out) const override {
+        out << "三角形 (边=" << bianA << "," << bianB << "," << bianC
+           << ", 面积=" << mianji() << ", 周长=" << zhouchang() << ")";
     }
 
-    string getType() const override {
+    string leixing() const override {
         return "三角形";
     }
 };
 
-// 打印主菜单
-void printMenu(){
-    cout << "\n=====图形计算器菜单=====" << endl;
+// 显示主菜单
+void showmenu(){
+    cout << "\n=====图形计算器=====" << endl;
     cout << "1. 创建图形" << endl;
     cout << "2. 计算面积" << endl;
     cout << "3. 计算周长" << endl;
     cout << "4. 显示所有图形" << endl;
-    cout << "5. 图形面积相加" << endl;
-    cout << "0. 退出" << endl;
-    cout << "=====================" << endl;
-    cout << "请选择操作: ";
+    cout << "5. 面积相加" << endl;
+    cout << "0. 退出程序" << endl;
+    cout << "==================" << endl;
+    cout << "输入选择: ";
 }
-// 打印图形选择菜单
-void printGrapMenu()
-{
-    cout << "\n====选择图形类型====" << endl;
+
+// 显示图形菜单
+void showshapemenu(){
+    cout << "\n====图形类型====" << endl;
     cout << "1. 圆形" << endl;
     cout << "2. 椭圆" << endl;
     cout << "3. 矩形" << endl;
     cout << "4. 三角形" << endl;
-    cout << "=================" << endl;
-    cout << "请选择: ";
+    cout << "===============" << endl;
+    cout << "输入类型: ";
 }
 
 int main() {
-    vector<unique_ptr<Shape>> shapes;
+    vector<unique_ptr<ShapeBase>> allshapes;
+
     while (true) {
-        int choice;
-        printMenu();
-        cin >> choice;
-        if (choice == 0)
+        int choose;
+        showmenu();
+        cin >> choose;
+
+        if (choose == 0) {
+            cout << "程序结束" << endl;
             break;
+        }
+
         try {
-            switch (choice) {
-                case 1: { // 创建图形
-                    int type;
-                    printGrapMenu();
-                    cin >> type;
+            switch (choose) {
+                case 1: {  // 创建图形
+                    int shapetype;
+                    showshapemenu();
+                    cin >> shapetype;
 
-                    if (type < 1 || type > 4) {
-                        cout << "无效选择!" << endl;
-                        break;
-                    }
-
-                    cout << "输入参数: ";
-                    if (type == 1) { // 圆形
+                    if (shapetype == 1) {  // 圆形
                         double r;
+                        cout << "输入半径: ";
                         cin >> r;
-                        shapes.push_back(make_unique<Circle>(r));
-                    } else if (type == 2) { // 椭圆
+                        allshapes.push_back(make_unique<RoundShape>(r));
+                    }
+                    else if (shapetype == 2) {  // 椭圆
                         double a, b;
-                        cin >> a >> b;
-                        shapes.push_back(make_unique<Ellipse>(a, b));
-                    } else if (type == 3) { // 矩形
+                        cout << "输入长半轴: ";
+                        cin >> a;
+                        cout << "输入短半轴: ";
+                        cin >> b;
+                        allshapes.push_back(make_unique<OvalShape>(a, b));
+                    }
+                    else if (shapetype == 3) {  // 矩形
                         double w, h;
-                        cin >> w >> h;
-                        shapes.push_back(make_unique<Rectangle>(w, h));
-                    } else if (type == 4) { // 三角形
+                        cout << "输入宽度: ";
+                        cin >> w;
+                        cout << "输入高度: ";
+                        cin >> h;
+                        allshapes.push_back(make_unique<RectShape>(w, h));
+                    }
+                    else if (shapetype == 4) {  // 三角形
                         double s1, s2, s3;
-                        cin >> s1 >> s2 >> s3;
-                        shapes.push_back(make_unique<Triangle>(s1, s2, s3));
+                        cout << "输入第一条边: ";
+                        cin >> s1;
+                        cout << "输入第二条边: ";
+                        cin >> s2;
+                        cout << "输入第三条边: ";
+                        cin >> s3;
+                        allshapes.push_back(make_unique<TriShape>(s1, s2, s3));
                     }
-                    cout << "图形创建成功!" << endl;
+                    else {
+                        cout << "无效类型!" << endl;
+                        break;
+                    }
+                    cout << "图形已创建!" << endl;
                     break;
                 }
 
-                case 2: { // 计算面积
-                    if (shapes.empty()) {
-                        cout << "没有可用的图形!" << endl;
+                case 2: {  // 计算面积
+                    if (allshapes.empty()) {
+                        cout << "无图形数据!" << endl;
                         break;
                     }
 
-                    cout << "选择图形(0-" << shapes.size()-1 << "): ";
-                    int index;
-                    cin >> index;
+                    cout << "选择图形(0-" << allshapes.size()-1 << "): ";
+                    int idx;
+                    cin >> idx;
 
-                    if (index < 0 || index >= static_cast<int>(shapes.size())) {
-                        cout << "无效索引!" << endl;
+                    if (idx < 0 || idx >= allshapes.size()) {
+                        cout << "无效编号!" << endl;
                         break;
                     }
 
-                    double a = shapes[index]->area();
-                    cout << "面积: " << a << endl;
-                    logToFile(shapes[index]->getType() + "面积计算", a);
+                    double mj = allshapes[idx]->mianji();
+                    cout << "面积: " << mj << endl;
+                    writelog(allshapes[idx]->leixing() + "面积计算", mj);
                     break;
                 }
 
-                case 3: { // 计算周长
-                    if (shapes.empty()) {
-                        cout << "没有可用的图形!" << endl;
+                case 3: {  // 计算周长
+                    if (allshapes.empty()) {
+                        cout << "无图形数据!" << endl;
                         break;
                     }
 
-                    cout << "选择图形(0-" << shapes.size()-1 << "): ";
-                    int index;
-                    cin >> index;
+                    cout << "选择图形(0-" << allshapes.size()-1 << "): ";
+                    int idx;
+                    cin >> idx;
 
-                    if (index < 0 || index >= static_cast<int>(shapes.size())) {
-                        cout << "无效索引!" << endl;
+                    if (idx < 0 || idx >= allshapes.size()) {
+                        cout << "无效编号!" << endl;
                         break;
                     }
 
-                    double p = shapes[index]->perimeter();
-                    cout << "周长: " << p << endl;
-                    logToFile(shapes[index]->getType() + "周长计算", p);
+                    double zc = allshapes[idx]->zhouchang();
+                    cout << "周长: " << zc << endl;
+                    writelog(allshapes[idx]->leixing() + "周长计算", zc);
                     break;
                 }
 
-                case 4: { // 显示所有图形
-                    if (shapes.empty()) {
-                        cout << "没有可用的图形!" << endl;
+                case 4: {  // 显示所有图形
+                    if (allshapes.empty()) {
+                        cout << "无图形数据!" << endl;
                         break;
                     }
 
-                    cout << "\n所有图形:" << endl;
-                    for (size_t i = 0; i < shapes.size(); ++i) {
-                        cout << i << ": " << *shapes[i] << endl;
+                    cout << "\n图形列表:" << endl;
+                    for (size_t i = 0; i < allshapes.size(); i++) {
+                        cout << i << ": " << *allshapes[i] << endl;
                     }
                     break;
                 }
 
-                case 5: { // 面积相加
-                    if (shapes.size() < 2) {
-                        cout << "至少需要两个图形!" << endl;
+                case 5: {  // 面积相加
+                    if (allshapes.size() < 2) {
+                        cout << "需至少两个图形!" << endl;
                         break;
                     }
 
-                    cout << "选择第一个图形(0-" << shapes.size()-1 << "): ";
+                    cout << "选择第一个图形(0-" << allshapes.size()-1 << "): ";
                     int idx1;
                     cin >> idx1;
 
-                    cout << "选择第二个图形(0-" << shapes.size()-1 << "): ";
+                    cout << "选择第二个图形(0-" << allshapes.size()-1 << "): ";
                     int idx2;
                     cin >> idx2;
 
-                    if (idx1 < 0 || idx1 >= static_cast<int>(shapes.size()) ||
-                        idx2 < 0 || idx2 >= static_cast<int>(shapes.size())) {
-                        cout << "无效索引!" << endl;
+                    if (idx1 < 0 || idx1 >= allshapes.size() ||
+                        idx2 < 0 || idx2 >= allshapes.size()) {
+                        cout << "无效编号!" << endl;
                         break;
                     }
 
-                    double sum = *shapes[idx1] + *shapes[idx2];
+                    double sum = *allshapes[idx1] + *allshapes[idx2];
                     cout << "面积总和: " << sum << endl;
-                    logToFile("面积相加操作", sum);
+                    writelog("面积相加操作", sum);
                     break;
                 }
 
                 default:
                     cout << "无效选择!" << endl;
             }
-        } catch (const exception& e) {
+        }
+        catch (const exception& e) {
             cout << "错误: " << e.what() << endl;
         }
     }
 
-    cout << "程序已退出" << endl;
     return 0;
 }

@@ -25,7 +25,7 @@ class SortBy(Enum):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="fft文件名格式化工具", formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(description="文件名格式化工具", formatter_class=argparse.RawTextHelpFormatter)
 
     # 基础参数
     parser.add_argument("target", nargs="?", help="目标目录路径")

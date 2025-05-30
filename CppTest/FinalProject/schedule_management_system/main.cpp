@@ -8,308 +8,288 @@
 #include <iomanip>
 #include <map>
 
-// 基类：日程
-class Schedule {
+class ScheduleA {
 protected:
-    std::string type;
-    std::string content;
-    std::time_t time;
+    std::string leixing;
+    std::string xinxi;
+    std::time_t shijian;
 
 public:
-    Schedule(const std::string& t, const std::string& c, std::time_t tm)
-        : type(t), content(c), time(tm) {}
+    ScheduleA(const std::string& a, const std::string& b, std::time_t c)
+        : leixing(a), xinxi(b), shijian(c) {}
 
-    virtual ~Schedule() = default;
+    virtual ~ScheduleA() = default;
 
-    // 重载<运算符用于排序
-    bool operator<(const Schedule& other) const {
-        return time < other.time;
+    bool operator<(const ScheduleA& aa) const {
+        return shijian < aa.shijian;
     }
 
-    // 重载<<运算符用于输出
-    friend std::ostream& operator<<(std::ostream& os, const Schedule& s) {
-        char buffer[20];
-        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", std::localtime(&s.time));
-        os << "[" << s.type << "] " << buffer << " - " << s.content;
-        s.printDetails(os);
+    friend std::ostream& operator<<(std::ostream& os, const ScheduleA& ss) {
+        char bf[20];
+        std::strftime(bf, sizeof(bf), "%Y-%m-%d %H:%M", std::localtime(&ss.shijian));
+        os << "[" << ss.leixing << "] " << bf << " - " << ss.xinxi;
+        ss.xq(os);
         return os;
     }
 
-    // 多态方法
-    virtual void printDetails(std::ostream& os) const = 0;
-    virtual std::string getSpecificInfo() const = 0;
-    virtual std::string toJSON() const = 0;
+    virtual void xq(std::ostream& os) const = 0;
+    virtual std::string tjs() const = 0;
+    virtual std::string toJ() const = 0;
 
-    // 获取器
-    std::time_t getTime() const { return time; }
-    std::string getType() const { return type; }
-    std::string getContent() const { return content; }
+    std::time_t getT() const { return shijian; }
+    std::string getL() const { return leixing; }
+    std::string getX() const { return xinxi; }
 };
 
-// 会议
-class Meeting : public Schedule {
-    std::string location;
+class MeetingA : public ScheduleA {
+    std::string didian;
 
 public:
-    Meeting(const std::string& c, std::time_t tm, const std::string& loc)
-        : Schedule("会议", c, tm), location(loc) {}
+    MeetingA(const std::string& a, std::time_t b, const std::string& c)
+        : ScheduleA("会议", a, b), didian(c) {}
 
-    void printDetails(std::ostream& os) const override {
-        os << " (地点: " << location << ")";
+    void xq(std::ostream& os) const override {
+        os << " (地点: " << didian << ")";
     }
 
-    std::string getSpecificInfo() const override {
-        return location;
+    std::string tjs() const override {
+        return didian;
     }
 
-    std::string toJSON() const override {
+    std::string toJ() const override {
         std::ostringstream oss;
         oss << "{"
             << "\"type\":\"会议\","
-            << "\"content\":\"" << content << "\","
-            << "\"time\":" << time << ","
-            << "\"location\":\"" << location << "\""
+            << "\"content\":\"" << xinxi << "\","
+            << "\"time\":" << shijian << ","
+            << "\"location\":\"" << didian << "\""
             << "}";
         return oss.str();
     }
 };
 
-// 提醒
-class Reminder : public Schedule {
-    std::string frequency;
+class ReminderA : public ScheduleA {
+    std::string pinlv;
 
 public:
-    Reminder(const std::string& c, std::time_t tm, const std::string& freq)
-        : Schedule("提醒", c, tm), frequency(freq) {}
+    ReminderA(const std::string& a, std::time_t b, const std::string& c)
+        : ScheduleA("提醒", a, b), pinlv(c) {}
 
-    void printDetails(std::ostream& os) const override {
-        os << " (频率: " << frequency << ")";
+    void xq(std::ostream& os) const override {
+        os << " (频率: " << pinlv << ")";
     }
 
-    std::string getSpecificInfo() const override {
-        return frequency;
+    std::string tjs() const override {
+        return pinlv;
     }
 
-    std::string toJSON() const override {
+    std::string toJ() const override {
         std::ostringstream oss;
         oss << "{"
             << "\"type\":\"提醒\","
-            << "\"content\":\"" << content << "\","
-            << "\"time\":" << time << ","
-            << "\"frequency\":\"" << frequency << "\""
+            << "\"content\":\"" << xinxi << "\","
+            << "\"time\":" << shijian << ","
+            << "\"frequency\":\"" << pinlv << "\""
             << "}";
         return oss.str();
     }
 };
 
-// 任务
-class Task : public Schedule {
-    std::string priority;
+class TaskA : public ScheduleA {
+    std::string youxianji;
 
 public:
-    Task(const std::string& c, std::time_t tm, const std::string& pri)
-        : Schedule("任务", c, tm), priority(pri) {}
+    TaskA(const std::string& a, std::time_t b, const std::string& c)
+        : ScheduleA("任务", a, b), youxianji(c) {}
 
-    void printDetails(std::ostream& os) const override {
-        os << " (优先级: " << priority << ")";
+    void xq(std::ostream& os) const override {
+        os << " (优先级: " << youxianji << ")";
     }
 
-    std::string getSpecificInfo() const override {
-        return priority;
+    std::string tjs() const override {
+        return youxianji;
     }
 
-    std::string toJSON() const override {
+    std::string toJ() const override {
         std::ostringstream oss;
         oss << "{"
             << "\"type\":\"任务\","
-            << "\"content\":\"" << content << "\","
-            << "\"time\":" << time << ","
-            << "\"priority\":\"" << priority << "\""
+            << "\"content\":\"" << xinxi << "\","
+            << "\"time\":" << shijian << ","
+            << "\"priority\":\"" << youxianji << "\""
             << "}";
         return oss.str();
     }
 };
 
-// 日程管理系统
-class ScheduleManager {
+class ManagerA {
 private:
-    std::vector<std::unique_ptr<Schedule>> schedules;
+    std::vector<std::unique_ptr<ScheduleA>> rcb;
 
 public:
-    // 从字符串解析时间
-    static std::time_t parseTime(const std::string& datetime){
+    static std::time_t parseT(const std::string& dt){
         std::tm tm = {};
-        std::istringstream ss(datetime);
+        std::istringstream ss(dt);
         ss >> std::get_time(&tm, "%Y-%m-%d %H:%M");
         if (ss.fail()) return -1;
         return std::mktime(&tm);
     }
 
-    // 时间格式化
-    static std::string formatTime(const std::time_t time){
-        char buffer[20];
-        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", std::localtime(&time));
-        return buffer;
+    static std::string formatT(const std::time_t t){
+        char bf[20];
+        std::strftime(bf, sizeof(bf), "%Y-%m-%d %H:%M", std::localtime(&t));
+        return bf;
     }
 
-    // 添加日程
-    void addSchedule(std::unique_ptr<Schedule> s) {
-        schedules.push_back(std::move(s));
+    void addS(std::unique_ptr<ScheduleA> s) {
+        rcb.push_back(std::move(s));
     }
 
-    // 删除日程
-    bool deleteSchedule(const int index) {
-        if (index < 0 || index >= static_cast<int>(schedules.size())) {
+    bool delS(const int idx) {
+        if (idx < 0 || idx >= static_cast<int>(rcb.size())) {
             return false;
         }
-        schedules.erase(schedules.begin() + index);
+        rcb.erase(rcb.begin() + idx);
         return true;
     }
 
-    // 查询日程
-    std::vector<Schedule*> querySchedules(const std::string& date = "",
-                                         std::time_t start = 0,
-                                         std::time_t end = 0) {
-        std::vector<Schedule*> results;
+    std::vector<ScheduleA*> findS(const std::string& d = "",
+                                         std::time_t s1 = 0,
+                                         std::time_t s2 = 0) {
+        std::vector<ScheduleA*> res;
 
-        for (auto& s : schedules) {
-            bool match = true;
-            if (!date.empty()) {
-                std::string sdate = formatTime(s->getTime()).substr(0, 10);
-                if (sdate != date) match = false;
+        for (auto& r : rcb) {
+            bool m = true;
+            if (!d.empty()) {
+                std::string rd = formatT(r->getT()).substr(0, 10);
+                if (rd != d) m = false;
             }
 
-            if (start != 0 && end != 0) {
-                if (s->getTime() < start || s->getTime() > end) match = false;
+            if (s1 != 0 && s2 != 0) {
+                if (r->getT() < s1 || r->getT() > s2) m = false;
             }
 
-            if (match) results.push_back(s.get());
+            if (m) res.push_back(r.get());
         }
 
-        return results;
+        return res;
     }
 
-    // 修改日程
-    bool modifySchedule(int index, const std::string& content,
-                       const std::string& datetime,
-                       const std::string& specific) {
-        if (index < 0 || index >= static_cast<int>(schedules.size())) {
+    bool modS(int idx, const std::string& ct,
+                       const std::string& dt,
+                       const std::string& sp) {
+        if (idx < 0 || idx >= static_cast<int>(rcb.size())) {
             return false;
         }
 
-        std::time_t newTime = parseTime(datetime);
-        if (newTime == -1) return false;
+        std::time_t nt = parseT(dt);
+        if (nt == -1) return false;
 
-        std::string type = schedules[index]->getType();
+        std::string tp = rcb[idx]->getL();
 
-        if (type == "会议") {
-            schedules[index] = std::make_unique<Meeting>(content, newTime, specific);
-        } else if (type == "提醒") {
-            schedules[index] = std::make_unique<Reminder>(content, newTime, specific);
-        } else if (type == "任务") {
-            schedules[index] = std::make_unique<Task>(content, newTime, specific);
+        if (tp == "会议") {
+            rcb[idx] = std::make_unique<MeetingA>(ct, nt, sp);
+        } else if (tp == "提醒") {
+            rcb[idx] = std::make_unique<ReminderA>(ct, nt, sp);
+        } else if (tp == "任务") {
+            rcb[idx] = std::make_unique<TaskA>(ct, nt, sp);
         }
 
         return true;
     }
 
-    // 排序后展示所有日程
-    void displayAll() {
-        std::sort(schedules.begin(), schedules.end(),
+    void showA() {
+        std::sort(rcb.begin(), rcb.end(),
                  [](const auto& a, const auto& b) { return *a < *b; });
 
-        for (size_t i = 0; i < schedules.size(); ++i) {
-            std::cout << i << ": " << *schedules[i] << std::endl;
+        for (size_t i = 0; i < rcb.size(); ++i) {
+            std::cout << i << ": " << *rcb[i] << std::endl;
         }
     }
 
-    // 保存到JSON文件
-    void saveToJSON(const std::string& filename) {
-        std::ofstream file(filename);
-        if (!file) {
-            std::cerr << "无法打开文件: " << filename << std::endl;
+    void saveJ(const std::string& fn) {
+        std::ofstream ff(fn);
+        if (!ff) {
+            std::cerr << "无法打开文件: " << fn << std::endl;
             return;
         }
 
-        file << "[\n";
-        for (size_t i = 0; i < schedules.size(); ++i) {
-            file << schedules[i]->toJSON();
-            if (i < schedules.size() - 1) file << ",";
-            file << "\n";
+        ff << "[\n";
+        for (size_t i = 0; i < rcb.size(); ++i) {
+            ff << rcb[i]->toJ();
+            if (i < rcb.size() - 1) ff << ",";
+            ff << "\n";
         }
-        file << "]\n";
+        ff << "]\n";
     }
 
-    // 从JSON文件加载
-    void loadFromJSON(const std::string& filename) {
-        std::ifstream file(filename);
-        if (!file) {
-            std::cerr << "无法打开文件: " << filename << std::endl;
+    void loadJ(const std::string& fn) {
+        std::ifstream ff(fn);
+        if (!ff) {
+            std::cerr << "无法打开文件: " << fn << std::endl;
             return;
         }
 
-        schedules.clear();
-        std::string line, json;
-        while (std::getline(file, line)) {
-            json += line;
+        rcb.clear();
+        std::string ln, js;
+        while (std::getline(ff, ln)) {
+            js += ln;
         }
 
-        // JSON解析
-        size_t pos = 0;
-        while ((pos = json.find('{', pos)) != std::string::npos) {
-            size_t end = json.find('}', pos);
-            if (end == std::string::npos) break;
+        size_t p = 0;
+        while ((p = js.find('{', p)) != std::string::npos) {
+            size_t e = js.find('}', p);
+            if (e == std::string::npos) break;
 
-            std::string entry = json.substr(pos + 1, end - pos - 1);
-            std::map<std::string, std::string> fields;
+            std::string en = js.substr(p + 1, e - p - 1);
+            std::map<std::string, std::string> ff;
 
-            size_t fieldStart = 0;
-            while (fieldStart < entry.size()) {
-                size_t colon = entry.find(':', fieldStart);
-                if (colon == std::string::npos) break;
+            size_t fs = 0;
+            while (fs < en.size()) {
+                size_t cl = en.find(':', fs);
+                if (cl == std::string::npos) break;
 
-                std::string key = entry.substr(fieldStart, colon - fieldStart);
-                key.erase(std::remove(key.begin(), key.end(), '"'), key.end());
-                key.erase(std::remove(key.begin(), key.end(), ' '), key.end());
+                std::string k = en.substr(fs, cl - fs);
+                k.erase(std::remove(k.begin(), k.end(), '"'), k.end());
+                k.erase(std::remove(k.begin(), k.end(), ' '), k.end());
 
-                size_t valueStart = colon + 1;
-                size_t valueEnd = entry.find(',', valueStart);
-                if (valueEnd == std::string::npos) valueEnd = entry.size();
+                size_t vs = cl + 1;
+                size_t ve = en.find(',', vs);
+                if (ve == std::string::npos) ve = en.size();
 
-                std::string value = entry.substr(valueStart, valueEnd - valueStart);
-                if (value.front() == '"' && value.back() == '"') {
-                    value = value.substr(1, value.size() - 2);
+                std::string v = en.substr(vs, ve - vs);
+                if (v.front() == '"' && v.back() == '"') {
+                    v = v.substr(1, v.size() - 2);
                 }
 
-                fields[key] = value;
-                fieldStart = valueEnd + 1;
+                ff[k] = v;
+                fs = ve + 1;
             }
 
-            if (fields.count("type") && fields.count("content") &&
-                fields.count("time")) {
+            if (ff.count("type") && ff.count("content") &&
+                ff.count("time")) {
 
-                std::time_t t = static_cast<std::time_t>(std::stoll(fields["time"]));
-                if (fields["type"] == "会议") {
-                    schedules.push_back(std::make_unique<Meeting>(
-                        fields["content"], t, fields["location"]
+                std::time_t t = static_cast<std::time_t>(std::stoll(ff["time"]));
+                if (ff["type"] == "会议") {
+                    rcb.push_back(std::make_unique<MeetingA>(
+                        ff["content"], t, ff["location"]
                     ));
-                } else if (fields["type"] == "提醒") {
-                    schedules.push_back(std::make_unique<Reminder>(
-                        fields["content"], t, fields["frequency"]
+                } else if (ff["type"] == "提醒") {
+                    rcb.push_back(std::make_unique<ReminderA>(
+                        ff["content"], t, ff["frequency"]
                     ));
-                } else if (fields["type"] == "任务") {
-                    schedules.push_back(std::make_unique<Task>(
-                        fields["content"], t, fields["priority"]
+                } else if (ff["type"] == "任务") {
+                    rcb.push_back(std::make_unique<TaskA>(
+                        ff["content"], t, ff["priority"]
                     ));
                 }
             }
-            pos = end + 1;
+            p = e + 1;
         }
     }
 };
 
-// 打印菜单
-void displayMenu() {
+void showMenu() {
     std::cout << "\n=====日程管理系统=====\n";
     std::cout << "1. 添加日程\n";
     std::cout << "2. 删除日程\n";
@@ -324,74 +304,74 @@ void displayMenu() {
 }
 
 int main() {
-    ScheduleManager manager;
-    int choice;
-    const std::string filename = "schedules.json";
+    ManagerA mgr;
+    int ch;
+    const std::string fn = "schedules.json";
 
     do {
-        displayMenu();
-        std::cin >> choice;
+        showMenu();
+        std::cin >> ch;
         std::cin.ignore();
 
-        switch (choice) {
-            case 1: {  // 添加日程
-                std::string type, content, specific, datetime;
+        switch (ch) {
+            case 1: {
+                std::string tp, ct, sp, dt;
 
                 std::cout << "选择类型 (1.会议 2.提醒 3.任务): ";
-                int typeChoice;
-                std::cin >> typeChoice;
+                int tch;
+                std::cin >> tch;
                 std::cin.ignore();
 
-                if (typeChoice < 1 || typeChoice > 3) {
+                if (tch < 1 || tch > 3) {
                     std::cout << "无效选择!\n";
                     break;
                 }
 
                 std::cout << "输入内容: ";
-                std::getline(std::cin, content);
+                std::getline(std::cin, ct);
 
                 std::cout << "输入时间 (YYYY-MM-DD HH:MM): ";
-                std::getline(std::cin, datetime);
+                std::getline(std::cin, dt);
 
-                if (typeChoice == 1) {
+                if (tch == 1) {
                     std::cout << "输入地点: ";
-                    std::getline(std::cin, specific);
-                    type = "会议";
-                } else if (typeChoice == 2) {
+                    std::getline(std::cin, sp);
+                    tp = "会议";
+                } else if (tch == 2) {
                     std::cout << "输入频率: ";
-                    std::getline(std::cin, specific);
-                    type = "提醒";
+                    std::getline(std::cin, sp);
+                    tp = "提醒";
                 } else {
                     std::cout << "输入优先级: ";
-                    std::getline(std::cin, specific);
-                    type = "任务";
+                    std::getline(std::cin, sp);
+                    tp = "任务";
                 }
 
-                std::time_t t = manager.parseTime(datetime);
+                std::time_t t = mgr.parseT(dt);
                 if (t == -1) {
                     std::cout << "时间格式错误!\n";
                     break;
                 }
 
-                if (type == "会议") {
-                    manager.addSchedule(std::make_unique<Meeting>(content, t, specific));
-                } else if (type == "提醒") {
-                    manager.addSchedule(std::make_unique<Reminder>(content, t, specific));
+                if (tp == "会议") {
+                    mgr.addS(std::make_unique<MeetingA>(ct, t, sp));
+                } else if (tp == "提醒") {
+                    mgr.addS(std::make_unique<ReminderA>(ct, t, sp));
                 } else {
-                    manager.addSchedule(std::make_unique<Task>(content, t, specific));
+                    mgr.addS(std::make_unique<TaskA>(ct, t, sp));
                 }
 
                 std::cout << "日程添加成功!\n";
                 break;
             }
 
-            case 2: {  // 删除日程
-                manager.displayAll();
-                int index;
+            case 2: {
+                mgr.showA();
+                int idx;
                 std::cout << "输入要删除的日程编号: ";
-                std::cin >> index;
+                std::cin >> idx;
 
-                if (manager.deleteSchedule(index)) {
+                if (mgr.delS(idx)) {
                     std::cout << "日程删除成功!\n";
                 } else {
                     std::cout << "无效编号!\n";
@@ -399,76 +379,77 @@ int main() {
                 break;
             }
 
-            case 3: {  // 查询日程
-                int queryType;
+            case 3: {
+                int qtype;
                 std::cout << "查询方式 (1.按日期 2.按时间范围): ";
-                std::cin >> queryType;
+                std::cin >> qtype;
                 std::cin.ignore();
 
-                std::vector<Schedule*> results;
+                std::vector<ScheduleA*> res;
 
-                if (queryType == 1) {
-                    std::string date;
+                if (qtype == 1) {
+                    std::string d;
                     std::cout << "输入日期 (YYYY-MM-DD): ";
-                    std::getline(std::cin, date);
-                    results = manager.querySchedules(date);
-                } else if (queryType == 2) {
-                    std::string startStr, endStr;
+                    std::getline(std::cin, d);
+                    res = mgr.findS(d);
+                } else if (qtype == 2) {
+                    std::string sstr, estr;
                     std::cout << "输入起始时间 (YYYY-MM-DD HH:MM): ";
-                    std::getline(std::cin, startStr);
+                    std::getline(std::cin, sstr);
                     std::cout << "输入结束时间 (YYYY-MM-DD HH:MM): ";
-                    std::getline(std::cin, endStr);
+                    std::getline(std::cin, estr);
 
-                    std::time_t start = manager.parseTime(startStr);
-                    std::time_t end = manager.parseTime(endStr);
+                    std::time_t st = mgr.parseT(sstr);
+                    std::time_t et = mgr.parseT(estr);
 
-                    if (start == -1 || end == -1) {
+                    if (st == -1 || et == -1) {
                         std::cout << "时间格式错误!\n";
                         break;
                     }
 
-                    results = manager.querySchedules("", start, end);
+                    res = mgr.findS("", st, et);
                 } else {
                     std::cout << "无效选择!\n";
                     break;
                 }
 
-                if (results.empty()) {
+                if (res.empty()) {
                     std::cout << "未找到匹配日程\n";
                 } else {
-                    for (auto s : results) {
+                    for (auto s : res) {
                         std::cout << *s << std::endl;
                     }
                 }
                 break;
             }
 
-            case 4: {  // 修改日程
-                manager.displayAll();
-                int index;
+            case 4: {
+                mgr.showA();
+                int idx;
                 std::cout << "输入要修改的日程编号: ";
-                std::cin >> index;
+                std::cin >> idx;
                 std::cin.ignore();
 
-                std::string content, datetime, specific;
+                std::string ct, dt, sp;
                 std::cout << "输入新内容 (直接回车保持原内容): ";
-                std::getline(std::cin, content);
+                std::getline(std::cin, ct);
 
                 std::cout << "输入新时间 (YYYY-MM-DD HH:MM) (直接回车保持原时间): ";
-                std::getline(std::cin, datetime);
+                std::getline(std::cin, dt);
 
-                if (!datetime.empty() && manager.parseTime(datetime) == -1) {
+                if (!dt.empty() && mgr.parseT(dt) == -1) {
                     std::cout << "时间格式错误!\n";
                     break;
                 }
 
                 std::cout << "输入新特定信息 (直接回车保持原信息): ";
-                std::getline(std::cin, specific);
+                std::getline(std::cin, sp);
 
-                if (manager.modifySchedule(index,
-                    content.empty() ? manager.querySchedules()[index]->getContent() : content,
-                    datetime.empty() ? manager.formatTime(manager.querySchedules()[index]->getTime()) : datetime,
-                    specific.empty() ? manager.querySchedules()[index]->getSpecificInfo() : specific)) {
+                std::vector<ScheduleA*> tmp = mgr.findS();
+                if (mgr.modS(idx,
+                    ct.empty() ? tmp[idx]->getX() : ct,
+                    dt.empty() ? mgr.formatT(tmp[idx]->getT()) : dt,
+                    sp.empty() ? tmp[idx]->tjs() : sp)) {
                     std::cout << "日程修改成功!\n";
                 } else {
                     std::cout << "修改失败!\n";
@@ -476,28 +457,28 @@ int main() {
                 break;
             }
 
-            case 5:  // 展示所有日程
-                manager.displayAll();
+            case 5:
+                mgr.showA();
                 break;
 
-            case 6:  // 保存到文件
-                manager.saveToJSON(filename);
-                std::cout << "日程已保存到 " << filename << std::endl;
+            case 6:
+                mgr.saveJ(fn);
+                std::cout << "日程已保存到 " << fn << std::endl;
                 break;
 
-            case 7:  // 从文件加载
-                manager.loadFromJSON(filename);
-                std::cout << "日程已从 " << filename << " 加载" << std::endl;
+            case 7:
+                mgr.loadJ(fn);
+                std::cout << "日程已从 " << fn << " 加载" << std::endl;
                 break;
 
-            case 0:  // 退出
+            case 0:
                 std::cout << "感谢使用日程管理系统!\n";
                 break;
 
             default:
                 std::cout << "无效选择，请重新输入!\n";
         }
-    } while (choice != 0);
+    } while (ch != 0);
 
     return 0;
 }

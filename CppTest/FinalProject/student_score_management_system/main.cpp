@@ -18,7 +18,7 @@ public:
     virtual bool match(const string& keyword) const = 0;
 };
 
-// 学生成绩类
+// 派生-成绩类
 class Student : public DataItem {
 private:
     string name;
@@ -33,17 +33,14 @@ public:
         return id == other.id;
     }
 
-    // 设置成绩
     void setScore(const string& subject, double score) {
         scores[subject] = score;
     }
 
-    // 删除科目成绩
     void removeScore(const string& subject) {
         scores.erase(subject);
     }
 
-    // 获取总分
     double getTotal() const {
         double total = 0.0;
         for (const auto& s : scores) {
@@ -52,13 +49,11 @@ public:
         return total;
     }
 
-    // 获取指定科目成绩
     double getScore(const string& subject) const {
         auto it = scores.find(subject);
         return (it != scores.end()) ? it->second : -1.0;
     }
 
-    // 显示学生信息
     void display() const override {
         cout << left << setw(15) << name << setw(15) << id;
         for (const auto& s : scores) {
@@ -67,7 +62,6 @@ public:
         cout << "总分:" << setw(6) << getTotal() << endl;
     }
 
-    // 转换为CSV格式
     string toCSV() const override {
         ostringstream oss;
         oss << name << "," << id;
@@ -77,7 +71,6 @@ public:
         return oss.str();
     }
 
-    // 匹配查询
     bool match(const string& keyword) const override {
         return name.find(keyword) != string::npos || id.find(keyword) != string::npos;
     }
@@ -87,7 +80,7 @@ public:
     const map<string, double>& getScores() const { return scores; }
 };
 
-// 表单管理类
+// 表单类
 class GradeForm {
 private:
     string formName;
@@ -99,9 +92,7 @@ public:
         subjects = {};
     }
 
-    // 添加学生
     void addStudent(const Student& student) {
-        // 检查学号是否重复
         auto it = find(students.begin(), students.end(), student);
         if (it != students.end()) {
             cout << "错误：学号 " << student.getId() << " 已存在！" << endl;
@@ -111,7 +102,6 @@ public:
         cout << "学生 " << student.getName() << " 添加成功" << endl;
     }
 
-    // 删除学生
     void removeStudent(const string& id) {
         auto it = find_if(students.begin(), students.end(),
                          [&](const Student& s) { return s.getId() == id; });
@@ -124,7 +114,6 @@ public:
         }
     }
 
-    // 查询学生
     void queryStudent(const string& keyword) {
         bool found = false;
         for (const auto& s : students) {
@@ -138,7 +127,6 @@ public:
         }
     }
 
-    // 修改成绩
     void modifyScore(const string& id, const string& subject, double score) {
         for (auto& s : students) {
             if (s.getId() == id) {
@@ -154,26 +142,22 @@ public:
         cout << "未找到学号为 " << id << " 的学生" << endl;
     }
 
-    // 添加科目
     void addSubject(const string& subject) {
         if (find(subjects.begin(), subjects.end(), subject) != subjects.end()) {
             cout << "科目已存在！" << endl;
             return;
         }
         subjects.push_back(subject);
-        // 所有学生添加新科目（初始0分）
         for (auto& s : students) {
             s.setScore(subject, 0.0);
         }
         cout << "已添加科目: " << subject << endl;
     }
 
-    // 删除科目
     void removeSubject(const string& subject) {
         auto it = find(subjects.begin(), subjects.end(), subject);
         if (it != subjects.end()) {
             subjects.erase(it);
-            // 删除所有学生该科目成绩
             for (auto& s : students) {
                 s.removeScore(subject);
             }
@@ -183,9 +167,7 @@ public:
         }
     }
 
-    // 展示表单
     void display(bool showAverage = false) {
-        // 显示表头
         cout << "\n表单: " << formName << endl;
         cout << left << setw(15) << "姓名" << setw(15) << "学号";
         for (const auto& sub : subjects) {
@@ -193,8 +175,6 @@ public:
         }
         cout << setw(15) << "总分" << endl;
         cout << string(15*(subjects.size()+2), '-') << endl;
-
-        // 显示学生数据
         for (const auto& s : students) {
             cout << left << setw(15) << s.getName() << setw(15) << s.getId();
             for (const auto& sub : subjects) {
@@ -208,7 +188,6 @@ public:
             cout << setw(15) << s.getTotal() << endl;
         }
 
-        // 显示平均分
         if (showAverage && !students.empty()) {
             cout << string(15*(subjects.size()+2), '-') << endl;
             cout << left << setw(30) << "平均分"; // 独占姓名槽+学号槽长度
@@ -229,7 +208,6 @@ public:
         }
     }
 
-    // 排序展示
     void sortAndDisplay(const string& criteria, bool ascending = true) {
         if (criteria == "学号") {
             sort(students.begin(), students.end(),
@@ -247,7 +225,7 @@ public:
                     return ascending ? a.getTotal() < b.getTotal() : a.getTotal() > b.getTotal();
                 });
         } else {
-            // 按科目排序
+            // 科目
             sort(students.begin(), students.end(),
                 [&](const Student& a, const Student& b) {
                     double scoreA = a.getScore(criteria);
@@ -258,7 +236,6 @@ public:
         display(true);
     }
 
-    // 保存到CSV
     void saveToCSV(const string& filename) {
         ofstream file(filename);
         if (!file.is_open()) {
@@ -266,14 +243,12 @@ public:
             return;
         }
 
-        // 表头
         file << "姓名,学号";
         for (const auto& sub : subjects) {
             file << "," << sub;
         }
         file << endl;
 
-        // 数据
         for (const auto& s : students) {
             file << s.toCSV() << endl;
         }
@@ -282,7 +257,6 @@ public:
         file.close();
     }
 
-    // 从CSV加载
     void loadFromCSV(const string& filename) {
         ifstream file(filename);
         if (!file.is_open()) {
@@ -294,7 +268,7 @@ public:
         subjects.clear();
 
         string line;
-        // 表头
+
         if (getline(file, line)) {
             stringstream ss(line);
             string cell;
@@ -304,13 +278,16 @@ public:
                 headers.push_back(cell);
             }
 
-            // 前两列是姓名和学号，其余是科目
+            // 姓名 学号
             if (headers.size() >= 2) {
                 subjects = vector<string>(headers.begin() + 2, headers.end());
+            }else if (headers.size() < 2)
+            {
+                cerr << "文件无效: " << filename << endl;
+                return;
             }
         }
 
-        // 数据
         while (getline(file, line)) {
             stringstream ss(line);
             string cell;
@@ -323,12 +300,8 @@ public:
             if (rowData.size() >= 2) {
                 Student s(rowData[0], rowData[1]);
                 for (int i = 0; i < subjects.size() && i + 2 < rowData.size(); i++) {
-                    try {
-                        double score = stod(rowData[i + 2]);
-                        s.setScore(subjects[i], score);
-                    } catch (...) {
-                        // 转换失败时跳过
-                    }
+                    double score = stod(rowData[i + 2]);
+                    s.setScore(subjects[i], score);
                 }
                 students.push_back(s);
             }
@@ -342,12 +315,11 @@ public:
     const vector<string>& getSubjects() const { return subjects; }
 };
 
-// 成绩管理系统
+// 管理系统
 class GradeSystem {
 private:
     vector<GradeForm> forms;
 
-    // 查找表单索引
     int findFormIndex(const string& name) {
         for (int i = 0; i < forms.size(); i++) {
             if (forms[i].getName() == name) {
@@ -358,7 +330,6 @@ private:
     }
 
 public:
-    // 创建新表单
     void createForm(const string& name) {
         if (findFormIndex(name) != -1) {
             cout << "表单已存在！" << endl;
@@ -368,7 +339,6 @@ public:
         cout << "已创建表单: " << name << endl;
     }
 
-    // 删除表单
     void removeForm(const string& name) {
         int index = findFormIndex(name);
         if (index != -1) {
@@ -379,7 +349,6 @@ public:
         }
     }
 
-    // 获取表单
     GradeForm* getForm(const string& name) {
         int index = findFormIndex(name);
         if (index != -1) {
@@ -389,7 +358,6 @@ public:
         return nullptr;
     }
 
-    // 显示所有表单
     void listForms() {
         if (forms.empty()) {
             cout << "当前没有表单" << endl;
@@ -403,7 +371,7 @@ public:
     }
 };
 
-// 显示主菜单
+// 打印主菜单
 void displayMainMenu() {
     cout << "\n===== 学生成绩管理系统 =====";
     cout << "\n1. 创建表单";
@@ -417,7 +385,7 @@ void displayMainMenu() {
     cout << "\n请选择操作: ";
 }
 
-// 显示表单管理菜单
+// 打印表单菜单
 void displayFormMenu() {
     cout << "\n===== 表单管理 =====";
     cout << "\n1. 添加学生";
@@ -442,21 +410,21 @@ int main() {
         cin >> choice;
         if (choice == 0) break;
         switch (choice) {
-            case 1: { // 创建表单
+            case 1: { // 创建
                 string name;
                 cout << "输入新表单名称: ";
                 cin >> name;
                 system.createForm(name);
                 break;
             }
-            case 2: { // 删除表单
+            case 2: { // 删除
                 string name;
                 cout << "输入要删除的表单名称: ";
                 cin >> name;
                 system.removeForm(name);
                 break;
             }
-            case 3: { // 管理表单
+            case 3: { // 管理
                 string sheet_name;
                 cout << "输入要管理的表单名称: ";
                 cin >> sheet_name;
@@ -471,7 +439,7 @@ int main() {
                     cin >> formChoice;
                     if (formChoice == 0) break;
                     switch (formChoice) {
-                        case 1: { // 添加学生
+                        case 1: { // 添加
                             string stu_name, id;
                             cout << "输入学生姓名: ";
                             cin >> stu_name;
@@ -480,21 +448,21 @@ int main() {
                             form->addStudent(Student(stu_name, id));
                             break;
                         }
-                        case 2: { // 删除学生
+                        case 2: { // 删除
                             string id;
                             cout << "输入要删除的学生学号: ";
                             cin >> id;
                             form->removeStudent(id);
                             break;
                         }
-                        case 3: { // 查询学生
+                        case 3: { // 查询
                             string keyword;
                             cout << "输入姓名或学号: ";
                             cin >> keyword;
                             form->queryStudent(keyword);
                             break;
                         }
-                        case 4: { // 修改成绩
+                        case 4: { // 修改
                             string id, subject;
                             double score;
                             cout << "输入学生学号: ";
@@ -506,24 +474,24 @@ int main() {
                             form->modifyScore(id, subject, score);
                             break;
                         }
-                        case 5: { // 添加科目
+                        case 5: { // 添加
                             string subject;
                             cout << "输入新科目名称: ";
                             cin >> subject;
                             form->addSubject(subject);
                             break;
                         }
-                        case 6: { // 删除科目
+                        case 6: { // 删除
                             string subject;
                             cout << "输入要删除的科目名称: ";
                             cin >> subject;
                             form->removeSubject(subject);
                             break;
                         }
-                        case 7: // 展示表单
+                        case 7:
                             form->display(true);
                             break;
-                        case 8: { // 排序展示
+                        case 8: {
                             string criteria;
                             cout << "输入排序依据(姓名/学号/总分/科目名): ";
                             cin >> criteria;
@@ -536,10 +504,10 @@ int main() {
                 }
                 break;
             }
-            case 4: // 列出所有表单
+            case 4:
                 system.listForms();
                 break;
-            case 5: { // 从CSV导入
+            case 5: {
                 string formName, filename;
                 cout << "输入表单名称: ";
                 cin >> formName;
@@ -552,7 +520,7 @@ int main() {
                 }
                 break;
             }
-            case 6: { // 导出到CSV
+            case 6: {
                 string formName, filename;
                 cout << "输入表单名称: ";
                 cin >> formName;

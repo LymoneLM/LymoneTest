@@ -82,13 +82,17 @@ class Snake:
         self.alive = True
         self.grow_pending = 2  # 初始长度为3
 
-    def update(self, current_time):
+    def update(self, current_time, mode):
         # 根据时间更新蛇的位置
         if current_time - self.last_move_time > self.move_delay:
             self.last_move_time = current_time
             head_x, head_y = self.positions[0]
             dx, dy = self.direction
-            new_head = ((head_x + dx) % GRID_WIDTH, (head_y + dy) % GRID_HEIGHT)
+
+            if mode == GameMode.ENDLESS:
+                new_head = ((head_x + dx) % GRID_WIDTH, (head_y + dy) % GRID_HEIGHT)
+            else:
+                new_head = (head_x + dx, head_y + dy)
 
             # 检查是否撞到自己
             if new_head in self.positions[1:]:
@@ -475,7 +479,7 @@ class PixelSnakeGame:
 
         if self.game_state == "playing":
             # 更新蛇的位置
-            self.snake.update(current_time)
+            self.snake.update(current_time, self.mode)
 
             # 更新游戏时间
             self.elapsed_time = (current_time - self.start_time) / 1000.0
@@ -511,15 +515,17 @@ class PixelSnakeGame:
                 self.food.spawn(self.snake.positions, self.obstacles.positions)
 
             # 检查碰撞(经典模式)
-            if self.mode == GameMode.CLASSIC:
+            if (self.mode == GameMode.CLASSIC
+                    or self.mode == GameMode.OBSTACLE
+                    or self.mode == GameMode.TIMED):
                 head_x, head_y = self.snake.positions[0]
                 # 撞墙检测
                 if head_x < 0 or head_x >= GRID_WIDTH or head_y < 0 or head_y >= GRID_HEIGHT:
                     self.snake.alive = False
 
-                # 障碍物碰撞
-                if self.snake.positions[0] in self.obstacles.positions:
-                    self.snake.alive = False
+            # 障碍物碰撞
+            if self.snake.positions[0] in self.obstacles.positions:
+                self.snake.alive = False
 
             # 检查游戏结束条件
             if not self.snake.alive:

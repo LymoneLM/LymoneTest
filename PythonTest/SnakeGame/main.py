@@ -1,12 +1,11 @@
-import pygame
-import sys
-import random
-import json
 import os
-import math
-from datetime import datetime
-from enum import Enum
+import sys
+import json
+import pygame
+import random
 import locale
+from enum import Enum
+from datetime import datetime
 
 # 设置系统编码为UTF-8
 locale.setlocale(locale.LC_ALL, 'zh_CN.UTF-8')
@@ -57,10 +56,6 @@ class Difficulty(Enum):
 
 # 方向向量
 DIRECTIONS = {
-    pygame.K_UP: (0, -1),
-    pygame.K_DOWN: (0, 1),
-    pygame.K_LEFT: (-1, 0),
-    pygame.K_RIGHT: (1, 0),
     pygame.K_w: (0, -1),
     pygame.K_s: (0, 1),
     pygame.K_a: (-1, 0),
@@ -293,7 +288,7 @@ class PixelSnakeGame:
         self.start_time = 0
         self.elapsed_time = 0
         self.last_score = 0
-        self.player_name = "玩家1"
+        self.player_name = "玩家-Lymone"
         self.timed_mode_duration = 180  # 限时模式时长(秒)
 
         # 分数榜
@@ -309,14 +304,18 @@ class PixelSnakeGame:
         if not self.scoreboard.scores:
             self._create_dummy_scores()
 
-    def load_font(self, size):
+    @staticmethod
+    def load_font(size):
         try:
-            font = pygame.font.SysFont("Microsoft YaHei", size)
+            font = pygame.font.Font("./assets/MiSans-Normal.ttf", size)
             return font
         except:
-            return pygame.font.SysFont(None, size)
+            return pygame.font.SysFont("Microsoft YaHei", size)
 
     def _create_dummy_scores(self):
+        """
+        生成测试榜单数据，仅用于测试
+        """
         modes = [GameMode.CLASSIC, GameMode.ENDLESS, GameMode.TIMED, GameMode.OBSTACLE]
         for i in range(15):
             mode = random.choice(modes)
@@ -399,7 +398,7 @@ class PixelSnakeGame:
 
             # 限时模式倒计时
             if self.mode == GameMode.TIMED:
-                self.timed_mode_time = max(0, self.timed_mode_duration - self.elapsed_time)
+                self.timed_mode_time = max(0.0, self.timed_mode_duration - self.elapsed_time)
                 if self.timed_mode_time <= 0:
                     self.game_state = "game_over"
 
@@ -467,7 +466,7 @@ class PixelSnakeGame:
             # 绘制食物
             self.food.draw(self.screen)
 
-            # 绘制障碍物(如果存在)
+            # 绘制障碍物(如果游戏模式允许)
             if self.mode == GameMode.OBSTACLE:
                 self.obstacles.draw(self.screen)
 
@@ -570,11 +569,12 @@ class PixelSnakeGame:
 
     def draw_menu(self):
         # 标题
+        title_y_pos = 30
         title_text = self.title_font.render("像素贪吃蛇", True, GREEN)
-        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 80))
+        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, title_y_pos))
 
         # 游戏模式选择
-        y_pos = 180
+        y_pos = 100 + title_y_pos
         mode_text = self.font.render("选择游戏模式:", True, WHITE)
         self.screen.blit(mode_text, (SCREEN_WIDTH // 2 - mode_text.get_width() // 2, y_pos))
 
@@ -586,7 +586,7 @@ class PixelSnakeGame:
         ]
 
         for i, (title, desc) in enumerate(modes):
-            y = y_pos + 50 + i * 70
+            y = y_pos + 50 + i * 60
             title_render = self.font.render(title, True, YELLOW)
             desc_render = self.small_font.render(desc, True, LIGHT_GRAY)
 
@@ -595,7 +595,7 @@ class PixelSnakeGame:
 
         # 其他选项
         settings_text = self.font.render("S - 游戏设置", True, BLUE)
-        self.screen.blit(settings_text, (SCREEN_WIDTH // 2 - settings_text.get_width() // 2, SCREEN_HEIGHT - 150))
+        self.screen.blit(settings_text, (SCREEN_WIDTH // 2 - settings_text.get_width() // 2, SCREEN_HEIGHT - 140))
 
         scores_text = self.font.render("H - 查看高分榜", True, BLUE)
         self.screen.blit(scores_text, (SCREEN_WIDTH // 2 - scores_text.get_width() // 2, SCREEN_HEIGHT - 100))

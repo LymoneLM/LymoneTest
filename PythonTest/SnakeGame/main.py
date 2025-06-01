@@ -273,7 +273,8 @@ class PixelSnakeGame:
         self.small_font = self.load_font(24)
 
         # 游戏状态
-        self.game_state = "menu"  # menu, playing, paused, game_over
+        self.game_state = "id_input"
+        self.name_warning = ""
         self.mode = GameMode.CLASSIC
         self.difficulty = Difficulty.MEDIUM
         self.show_grid = True
@@ -289,7 +290,7 @@ class PixelSnakeGame:
         self.start_time = 0
         self.elapsed_time = 0
         self.last_score = 0
-        self.player_name = "玩家-Lymone"
+        self.player_name = "无名高手"
         self.timed_mode_duration = 180  # 限时模式时长(秒)
 
         # 分数榜
@@ -356,7 +357,9 @@ class PixelSnakeGame:
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if self.game_state == "menu":
+                if self.game_state == "id_input":
+                    self.handle_id_input_keys(event)
+                elif self.game_state == "menu":
                     self.handle_menu_keys(event.key)
                 elif self.game_state == "playing":
                     self.handle_playing_keys(event.key)
@@ -368,6 +371,32 @@ class PixelSnakeGame:
                     self.handle_settings_keys(event.key)
                 elif self.game_state == "high_scores":
                     self.handle_high_scores_keys(event.key)
+
+    def handle_id_input_keys(self, event):
+        if event.key == pygame.K_RETURN:
+            # 验证ID长度
+            name_len = sum(2 if ord(c) > 127 else 1 for c in self.player_name)
+            if name_len == 0:
+                self.name_warning = "ID不能为空!"
+            elif name_len > 14:
+                self.name_warning = "ID过长! 最多14字符(汉字算2字符)"
+            else:
+                self.game_state = "menu"
+                self.name_warning = ""
+        elif event.key == pygame.K_BACKSPACE:
+            self.player_name = self.player_name[:-1]
+            self.name_warning = ""
+
+        elif event.unicode and event.unicode.isprintable():
+            new_char = event.unicode
+            char_len = 2 if ord(new_char) > 127 else 1
+            current_len = sum(2 if ord(c) > 127 else 1 for c in self.player_name)
+
+            if current_len + char_len <= 14:
+                self.player_name += new_char
+                self.name_warning = ""
+            else:
+                self.name_warning = "ID过长! 最多14字符(汉字算2字符)"
 
     def handle_menu_keys(self, key):
         if key in [pygame.K_1, pygame.K_KP1]:
@@ -457,7 +486,7 @@ class PixelSnakeGame:
                 if self.timed_mode_time <= 0:
                     self.game_state = "game_over"
 
-            # 更新障碍物(仅在障碍模式)
+            # 更新障碍物(障碍模式)
             if self.mode == GameMode.OBSTACLE:
                 self.obstacles.update(current_time, self.snake.positions, self.food.position)
 
@@ -495,10 +524,14 @@ class PixelSnakeGame:
             # 检查游戏结束条件
             if not self.snake.alive:
                 self.game_state = "game_over"
-                # 保存分数
                 self.save_score()
 
     def save_score(self):
+        self.scoreboard.scores = [
+            s for s in self.scoreboard.scores
+            if not (s.player_name == self.player_name and s.mode == self.mode.value)
+        ]
+
         score_entry = ScoreEntry(
             self.player_name,
             self.snake.score,
@@ -572,6 +605,9 @@ class PixelSnakeGame:
         elif self.game_state == "high_scores":
             self.draw_high_scores()
 
+        elif self.game_state == "id_input":
+            self.draw_id_input()
+
         pygame.display.flip()
 
     def draw_ui(self):
@@ -603,6 +639,36 @@ class PixelSnakeGame:
         if self.snake.consecutive_eats > 0:
             streak_text = self.font.render(f"连吃: {self.snake.consecutive_eats}/5", True, BLUE)
             self.screen.blit(streak_text, (SCREEN_WIDTH - 150, 40))
+
+    def draw_id_input(self):
+        self.screen.fill(BACKGROUND)
+
+        title_text = self.title_font.render("请输入玩家ID", True, GREEN)
+        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 150))
+
+        # 绘制输入框
+        input_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 250, 300, 50)
+        pygame.draw.rect(self.screen, LIGHT_GRAY, input_rect)
+        pygame.draw.rect(self.screen, WHITE, input_rect, 2)
+
+        # 绘制输入文本
+        text_surface = self.font.render(self.player_name, True, BLACK)
+        self.screen.blit(text_surface, (input_rect.x + 10, input_rect.y + 10))
+
+        # 绘制光标
+        if pygame.time.get_ticks() % 1000 < 500:
+            cursor_x = input_rect.x + 10 + text_surface.get_width()
+            pygame.draw.line(self.screen, BLACK, (cursor_x, input_rect.y + 10),
+                             (cursor_x, input_rect.y + 40), 2)
+
+        # 绘制提示
+        hint_text = self.font.render("按Enter确认 (ID最多14字符, 汉字算2字符)", True, WHITE)
+        self.screen.blit(hint_text, (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, 320))
+
+        # 绘制警告（如果有）
+        if self.name_warning:
+            warn_text = self.font.render(self.name_warning, True, RED)
+            self.screen.blit(warn_text, (SCREEN_WIDTH // 2 - warn_text.get_width() // 2, 380))
 
     def draw_pause_overlay(self):
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
@@ -736,83 +802,112 @@ class PixelSnakeGame:
         self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 30))
 
         mode_text = self.font.render("选择模式(按0-4):", True, WHITE)
-        self.screen.blit(mode_text, (50, 100))
+        self.screen.blit(mode_text, (50, 80))
 
         modes = [
             ("0. 全部", None),
-            ("1. 经典模式", GameMode.CLASSIC.value),
-            ("2. 无尽模式", GameMode.ENDLESS.value),
-            ("3. 限时挑战", GameMode.TIMED.value),
-            ("4. 障碍模式", GameMode.OBSTACLE.value)
+            ("1. 经典", GameMode.CLASSIC.value),
+            ("2. 无尽", GameMode.ENDLESS.value),
+            ("3. 限时", GameMode.TIMED.value),
+            ("4. 障碍", GameMode.OBSTACLE.value)
         ]
 
+        button_width = 120
+        button_height = 40
+        button_margin = 10
+        start_x = 50
+        start_y = 110
+
         for i, (name, mode_val) in enumerate(modes):
+            x = start_x + i * (button_width + button_margin)
+
             # 高亮显示当前选择的模式
             is_selected = (self.selected_scoreboard_mode == mode_val or
                            (self.selected_scoreboard_mode is None and mode_val is None))
-            color = YELLOW if is_selected else LIGHT_GRAY
-            mode_btn = self.font.render(name, True, color)
-            self.screen.blit(mode_btn, (180 + (i % 3) * 250, 100 + (i // 3) * 40))
+
+            button_color = (100, 200, 100) if is_selected else (70, 70, 80)
+            pygame.draw.rect(self.screen, button_color, (x, start_y, button_width, button_height))
+            pygame.draw.rect(self.screen, LIGHT_GRAY, (x, start_y, button_width, button_height), 2)
+
+            mode_btn = self.font.render(name, True, WHITE)
+            self.screen.blit(mode_btn, (x + button_width // 2 - mode_btn.get_width() // 2,
+                                        start_y + button_height // 2 - mode_btn.get_height() // 2))
 
         # 获取当前选择的分数榜
         if self.selected_scoreboard_mode is None:
             scores = self.scoreboard.get_top_scores()
-            mode_display = "全部模式"
         else:
             scores = self.scoreboard.get_top_scores(self.selected_scoreboard_mode)
-            mode_display = self.selected_scoreboard_mode
 
-        # 当前模式显示
-        current_mode_text = self.font.render(f"当前模式: {mode_display}", True, YELLOW)
-        self.screen.blit(current_mode_text, (SCREEN_WIDTH // 2 - current_mode_text.get_width() // 2, 180))
-
-        # 表格标题
         headers = ["排名", "玩家", "分数", "时间", "模式", "日期"]
-        y_pos = 150
+        y_pos = 160  # 下移以避免重叠
+
+        pygame.draw.rect(self.screen, (50, 50, 60), (40, y_pos - 5, SCREEN_WIDTH - 80, 35))
+
+        col_positions = [50, 150, 270, 390, 490, 610]
+
         for i, header in enumerate(headers):
             header_text = self.font.render(header, True, BLUE)
-            self.screen.blit(header_text, (50 + i * 130, y_pos))
+            self.screen.blit(header_text, (col_positions[i], y_pos))
 
-        # 分数数据
-        scores = self.scoreboard.get_top_scores()
-        for i, score in enumerate(scores[:10]):  # 只显示前10名
-            y = y_pos + 40 + i * 35
-            rank = self.small_font.render(f"{i + 1}", True, WHITE)
-            name = self.small_font.render(score.player_name, True, WHITE)
-            score_val = self.small_font.render(str(score.score), True, WHITE)
-            time_val = self.small_font.render(f"{score.duration:.1f}s", True, WHITE)
-            mode_val = self.small_font.render(score.mode, True, WHITE)
-            date_val = self.small_font.render(score.date.strftime("%m/%d"), True, WHITE)
+        scores = scores[:10]
 
-            self.screen.blit(rank, (60, y))
-            self.screen.blit(name, (180, y))
-            self.screen.blit(score_val, (310, y))
-            self.screen.blit(time_val, (440, y))
-            self.screen.blit(mode_val, (570, y))
-            self.screen.blit(date_val, (700, y))
+        # 绘制表格行
+        for i, score in enumerate(scores):
+            row_color = (60, 60, 70) if i % 2 == 0 else (50, 50, 60)
+            pygame.draw.rect(self.screen, row_color, (40, y_pos + 35 + i * 35, SCREEN_WIDTH - 80, 35))
+
+            rank_text = self.small_font.render(f"{i + 1}", True, YELLOW if i == 0 else WHITE)
+            self.screen.blit(rank_text, (col_positions[0] + 20, y_pos + 40 + i * 35))
+
+            name = score.player_name
+            if len(name) > 10:
+                name = name[:7] + "..."
+            name_text = self.small_font.render(name, True, WHITE)
+            self.screen.blit(name_text, (col_positions[1], y_pos + 40 + i * 35))
+
+            score_text = self.small_font.render(f"{score.score}", True, GREEN)
+            self.screen.blit(score_text, (col_positions[2] + 20, y_pos + 40 + i * 35))
+
+            mins = int(score.duration) // 60
+            secs = int(score.duration) % 60
+            time_str = f"{mins}:{secs:02d}"
+            time_text = self.small_font.render(time_str, True, WHITE)
+            self.screen.blit(time_text, (col_positions[3] + 10, y_pos + 40 + i * 35))
+
+            # 模式（简化显示）
+            mode_str = score.mode
+            if "经典" in mode_str:
+                mode_str = "经典"
+            elif "无尽" in mode_str:
+                mode_str = "无尽"
+            elif "限时" in mode_str:
+                mode_str = "限时"
+            elif "障碍" in mode_str:
+                mode_str = "障碍"
+            mode_text = self.small_font.render(mode_str, True, LIGHT_GRAY)
+            self.screen.blit(mode_text, (col_positions[4] + 10, y_pos + 40 + i * 35))
+
+            # 日期（只显示月/日）
+            date_text = self.small_font.render(score.date.strftime("%m/%d"), True, WHITE)
+            self.screen.blit(date_text, (col_positions[5] + 10, y_pos + 40 + i * 35))
+
+        # 如果没有记录
+        if not scores:
+            no_scores = self.font.render("暂无记录", True, LIGHT_GRAY)
+            self.screen.blit(no_scores, (SCREEN_WIDTH // 2 - no_scores.get_width() // 2, y_pos + 100))
 
         # 添加提示文本
-        hint_text = self.font.render("按0-4选择显示模式，按ESC返回主菜单", True, LIGHT_GRAY)
-        self.screen.blit(hint_text, (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, SCREEN_HEIGHT - 80))
-
-        # 返回
-        back_text = self.font.render("按ESC返回主菜单", True, GREEN)
-        self.screen.blit(back_text, (SCREEN_WIDTH // 2 - back_text.get_width() // 2, SCREEN_HEIGHT - 50))
+        hint_text = self.font.render("按0-4选择模式，按ESC返回主菜单", True, LIGHT_GRAY)
+        self.screen.blit(hint_text, (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, SCREEN_HEIGHT - 40))
 
     def run(self):
         while True:
             self.settings_changed = False
             self.handle_events()
-            if self.game_state == "playing":
-                self.update()
-            else:
-                self.update_game_state()
+            self.update()
             self.draw()
             self.clock.tick(FPS)
-
-    def update_game_state(self):
-        current_time = pygame.time.get_ticks()
-        self.elapsed_time = (current_time - self.start_time) / 1000.0
 
 # 启动游戏
 if __name__ == "__main__":

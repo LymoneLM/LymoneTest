@@ -308,6 +308,10 @@ class PixelSnakeGame:
         # 加载设置
         self.load_settings()
 
+        # 添加键盘状态跟踪
+        self.key_pressed = {}
+
+
     @staticmethod
     def load_font(size):
         try:
@@ -352,72 +356,90 @@ class PixelSnakeGame:
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if self.game_state == "playing":
-                    if event.key in DIRECTIONS:
-                        self.snake.change_direction(DIRECTIONS[event.key])
-                    elif event.key == pygame.K_SPACE:
-                        self.game_state = "paused"
-                    elif event.key == pygame.K_ESCAPE:
-                        self.game_state = "menu"
-
+                if self.game_state == "menu":
+                    self.handle_menu_keys(event.key)
+                elif self.game_state == "playing":
+                    self.handle_playing_keys(event.key)
                 elif self.game_state == "paused":
-                    if event.key == pygame.K_SPACE:
-                        self.game_state = "playing"
-                    elif event.key == pygame.K_ESCAPE:
-                        self.game_state = "menu"
-
+                    self.handle_paused_keys(event.key)
                 elif self.game_state == "game_over":
-                    if event.key == pygame.K_RETURN:
-                        self.reset_game()
-                    elif event.key == pygame.K_ESCAPE:
-                        self.game_state = "menu"
-
-                elif self.game_state == "menu":
-                    if event.key == pygame.K_1:
-                        self.mode = GameMode.CLASSIC
-                        self.reset_game()
-                    elif event.key == pygame.K_2:
-                        self.mode = GameMode.ENDLESS
-                        self.reset_game()
-                    elif event.key == pygame.K_3:
-                        self.mode = GameMode.TIMED
-                        self.reset_game()
-                    elif event.key == pygame.K_4:
-                        self.mode = GameMode.OBSTACLE
-                        self.reset_game()
-                    elif event.key == pygame.K_s:
-                        self.game_state = "settings"
-                    elif event.key == pygame.K_h:
-                        self.game_state = "high_scores"
-
+                    self.handle_game_over_keys(event.key)
                 elif self.game_state == "settings":
-                    if event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_g]:
-                        self.settings_changed = True
-                        self.save_settings()
-                    if event.key == pygame.K_1:
-                        self.difficulty = Difficulty.EASY
-                    elif event.key == pygame.K_2:
-                        self.difficulty = Difficulty.MEDIUM
-                    elif event.key == pygame.K_3:
-                        self.difficulty = Difficulty.HARD
-                    elif event.key == pygame.K_g:
-                        self.show_grid = not self.show_grid
-                    elif event.key == pygame.K_ESCAPE:
-                        self.game_state = "menu"
-
+                    self.handle_settings_keys(event.key)
                 elif self.game_state == "high_scores":
-                    if event.key == pygame.K_0:
-                        self.selected_scoreboard_mode = None  # 显示全部
-                    elif event.key == pygame.K_1:
-                        self.selected_scoreboard_mode = GameMode.CLASSIC.value
-                    elif event.key == pygame.K_2:
-                        self.selected_scoreboard_mode = GameMode.ENDLESS.value
-                    elif event.key == pygame.K_3:
-                        self.selected_scoreboard_mode = GameMode.TIMED.value
-                    elif event.key == pygame.K_4:
-                        self.selected_scoreboard_mode = GameMode.OBSTACLE.value
-                    elif event.key == pygame.K_ESCAPE:
-                        self.game_state = "menu"
+                    self.handle_high_scores_keys(event.key)
+
+    def handle_menu_keys(self, key):
+        if key in [pygame.K_1, pygame.K_KP1]:
+            self.mode = GameMode.CLASSIC
+            self.reset_game()
+        elif key in [pygame.K_2, pygame.K_KP2]:
+            self.mode = GameMode.ENDLESS
+            self.reset_game()
+        elif key in [pygame.K_3, pygame.K_KP3]:
+            self.mode = GameMode.TIMED
+            self.reset_game()
+        elif key in [pygame.K_4, pygame.K_KP4]:
+            self.mode = GameMode.OBSTACLE
+            self.reset_game()
+        elif key == pygame.K_s:
+            self.game_state = "settings"
+        elif key == pygame.K_h:
+            self.game_state = "high_scores"
+
+    def handle_playing_keys(self, key):
+        if key in DIRECTIONS:
+            self.snake.change_direction(DIRECTIONS[key])
+        elif key == pygame.K_SPACE:
+            self.game_state = "paused"
+        elif key == pygame.K_ESCAPE:
+            self.game_state = "menu"
+
+    def handle_paused_keys(self, key):
+        if key == pygame.K_SPACE:
+            self.game_state = "playing"
+        elif key == pygame.K_ESCAPE:
+            self.game_state = "menu"
+
+    def handle_game_over_keys(self, key):
+        if key == pygame.K_RETURN:
+            self.reset_game()
+        elif key == pygame.K_ESCAPE:
+            self.game_state = "menu"
+
+    def handle_settings_keys(self, key):
+        if key in [pygame.K_1, pygame.K_KP1]:
+            self.difficulty = Difficulty.EASY
+            self.settings_changed = True
+            self.save_settings()
+        elif key in [pygame.K_2, pygame.K_KP2]:
+            self.difficulty = Difficulty.MEDIUM
+            self.settings_changed = True
+            self.save_settings()
+        elif key in [pygame.K_3, pygame.K_KP3]:
+            self.difficulty = Difficulty.HARD
+            self.settings_changed = True
+            self.save_settings()
+        elif key == pygame.K_g:
+            self.show_grid = not self.show_grid
+            self.settings_changed = True
+            self.save_settings()
+        elif key == pygame.K_ESCAPE:
+            self.game_state = "menu"
+
+    def handle_high_scores_keys(self, key):
+        if key in [pygame.K_0, pygame.K_KP0]:
+            self.selected_scoreboard_mode = None
+        elif key in [pygame.K_1, pygame.K_KP1]:
+            self.selected_scoreboard_mode = GameMode.CLASSIC.value
+        elif key in [pygame.K_2, pygame.K_KP2]:
+            self.selected_scoreboard_mode = GameMode.ENDLESS.value
+        elif key in [pygame.K_3, pygame.K_KP3]:
+            self.selected_scoreboard_mode = GameMode.TIMED.value
+        elif key in [pygame.K_4, pygame.K_KP4]:
+            self.selected_scoreboard_mode = GameMode.OBSTACLE.value
+        elif key == pygame.K_ESCAPE:
+            self.game_state = "menu"
 
     def update(self):
         current_time = pygame.time.get_ticks()
@@ -781,10 +803,16 @@ class PixelSnakeGame:
         while True:
             self.settings_changed = False
             self.handle_events()
-            self.update()
+            if self.game_state == "playing":
+                self.update()
+            else:
+                self.update_game_state()
             self.draw()
             self.clock.tick(FPS)
 
+    def update_game_state(self):
+        current_time = pygame.time.get_ticks()
+        self.elapsed_time = (current_time - self.start_time) / 1000.0
 
 # 启动游戏
 if __name__ == "__main__":

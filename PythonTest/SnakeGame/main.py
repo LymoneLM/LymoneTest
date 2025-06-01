@@ -12,7 +12,6 @@ locale.setlocale(locale.LC_ALL, 'zh_CN.UTF-8')
 
 # 初始化pygame
 pygame.init()
-pygame.mixer.init()
 
 # 游戏常量
 SCREEN_WIDTH = 800
@@ -278,6 +277,8 @@ class PixelSnakeGame:
         self.mode = GameMode.CLASSIC
         self.difficulty = Difficulty.MEDIUM
         self.show_grid = True
+        self.selected_scoreboard_mode = None
+        self.settings_changed = False
 
         # 游戏对象
         self.snake = Snake()
@@ -303,6 +304,9 @@ class PixelSnakeGame:
         # 创建一些虚拟分数用于测试
         if not self.scoreboard.scores:
             self._create_dummy_scores()
+
+        # 加载设置
+        self.load_settings()
 
     @staticmethod
     def load_font(size):
@@ -386,6 +390,35 @@ class PixelSnakeGame:
                     elif event.key == pygame.K_h:
                         self.game_state = "high_scores"
 
+                elif self.game_state == "settings":
+                    if event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_g]:
+                        self.settings_changed = True
+                        self.save_settings()
+                    if event.key == pygame.K_1:
+                        self.difficulty = Difficulty.EASY
+                    elif event.key == pygame.K_2:
+                        self.difficulty = Difficulty.MEDIUM
+                    elif event.key == pygame.K_3:
+                        self.difficulty = Difficulty.HARD
+                    elif event.key == pygame.K_g:
+                        self.show_grid = not self.show_grid
+                    elif event.key == pygame.K_ESCAPE:
+                        self.game_state = "menu"
+
+                elif self.game_state == "high_scores":
+                    if event.key == pygame.K_0:
+                        self.selected_scoreboard_mode = None  # 显示全部
+                    elif event.key == pygame.K_1:
+                        self.selected_scoreboard_mode = GameMode.CLASSIC.value
+                    elif event.key == pygame.K_2:
+                        self.selected_scoreboard_mode = GameMode.ENDLESS.value
+                    elif event.key == pygame.K_3:
+                        self.selected_scoreboard_mode = GameMode.TIMED.value
+                    elif event.key == pygame.K_4:
+                        self.selected_scoreboard_mode = GameMode.OBSTACLE.value
+                    elif event.key == pygame.K_ESCAPE:
+                        self.game_state = "menu"
+
     def update(self):
         current_time = pygame.time.get_ticks()
 
@@ -451,6 +484,31 @@ class PixelSnakeGame:
             self.mode.value
         )
         self.scoreboard.add_score(score_entry)
+
+    def save_settings(self):
+        settings = {
+            "difficulty": self.difficulty.name,
+            "show_grid": self.show_grid,
+            "sound_volume": self.sound_volume,
+            "music_volume": self.music_volume
+        }
+        with open("settings.json", "w") as f:
+            json.dump(settings, f)
+
+    def load_settings(self):
+        try:
+            with open("settings.json", "r") as f:
+                settings = json.load(f)
+                self.difficulty = Difficulty[settings.get("difficulty", "MEDIUM")]
+                self.show_grid = settings.get("show_grid", True)
+                self.sound_volume = settings.get("sound_volume", 0.5)
+                self.music_volume = settings.get("music_volume", 0.3)
+        except:
+            # 如果文件不存在或读取失败，使用默认设置
+            self.difficulty = Difficulty.MEDIUM
+            self.show_grid = True
+            self.sound_volume = 0.5
+            self.music_volume = 0.3
 
     def draw(self):
         self.screen.fill(BACKGROUND)
@@ -614,34 +672,34 @@ class PixelSnakeGame:
         self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 50))
 
         # 难度设置
-        diff_text = self.font.render("难度设置:", True, WHITE)
+        diff_text = self.font.render("难度设置(按1-3选择):", True, WHITE)
         self.screen.blit(diff_text, (150, 150))
 
         difficulties = [
-            ("简单", Difficulty.EASY),
-            ("中等", Difficulty.MEDIUM),
-            ("困难", Difficulty.HARD)
+            ("1. 简单", Difficulty.EASY),
+            ("2. 中等", Difficulty.MEDIUM),
+            ("3. 困难", Difficulty.HARD)
         ]
 
         for i, (name, diff) in enumerate(difficulties):
             color = GREEN if diff == self.difficulty else LIGHT_GRAY
             diff_btn = self.font.render(name, True, color)
-            self.screen.blit(diff_btn, (300 + i * 150, 150))
+            self.screen.blit(diff_btn, (300 + i * 150, 220))
+
 
         # 网格显示
-        grid_text = self.font.render("显示网格:", True, WHITE)
-        self.screen.blit(grid_text, (150, 220))
+        grid_text = self.font.render("显示网格(按G切换):", True, WHITE)
+        self.screen.blit(grid_text, (150, 290))
 
         grid_status = self.font.render("开" if self.show_grid else "关", True, GREEN if self.show_grid else RED)
-        self.screen.blit(grid_status, (300, 220))
+        self.screen.blit(grid_status, (400, 290))
 
-        # 音量控制
-        sound_text = self.font.render("音效音量:", True, WHITE)
-        self.screen.blit(sound_text, (150, 290))
+        hint_text = self.small_font.render("设置会自动保存，按ESC返回主菜单", True, LIGHT_GRAY)
+        self.screen.blit(hint_text, (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, SCREEN_HEIGHT - 80))
 
-        # 绘制音量条
-        pygame.draw.rect(self.screen, GRAY, (300, 290, 200, 25))
-        pygame.draw.rect(self.screen, GREEN, (300, 290, int(200 * self.sound_volume), 25))
+        if self.settings_changed:
+            changed_text = self.small_font.render("设置已更新!", True, GREEN)
+            self.screen.blit(changed_text, (SCREEN_WIDTH - 200, SCREEN_HEIGHT - 50))
 
         # 返回
         back_text = self.font.render("按ESC返回主菜单", True, GREEN)
@@ -655,17 +713,36 @@ class PixelSnakeGame:
         title_text = self.title_font.render("高分榜", True, YELLOW)
         self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 30))
 
-        # 模式选择
-        mode_text = self.font.render("选择模式:", True, WHITE)
+        mode_text = self.font.render("选择模式(按0-4):", True, WHITE)
         self.screen.blit(mode_text, (50, 100))
 
-        modes = ["全部"] + [mode.value for mode in GameMode]
-        selected_mode = "全部"  # 简化版本，实际应支持选择
+        modes = [
+            ("0. 全部", None),
+            ("1. 经典模式", GameMode.CLASSIC.value),
+            ("2. 无尽模式", GameMode.ENDLESS.value),
+            ("3. 限时挑战", GameMode.TIMED.value),
+            ("4. 障碍模式", GameMode.OBSTACLE.value)
+        ]
 
-        for i, mode in enumerate(modes):
-            color = GREEN if mode == selected_mode else LIGHT_GRAY
-            mode_btn = self.font.render(mode, True, color)
-            self.screen.blit(mode_btn, (180 + i * 150, 100))
+        for i, (name, mode_val) in enumerate(modes):
+            # 高亮显示当前选择的模式
+            is_selected = (self.selected_scoreboard_mode == mode_val or
+                           (self.selected_scoreboard_mode is None and mode_val is None))
+            color = YELLOW if is_selected else LIGHT_GRAY
+            mode_btn = self.font.render(name, True, color)
+            self.screen.blit(mode_btn, (180 + (i % 3) * 250, 100 + (i // 3) * 40))
+
+        # 获取当前选择的分数榜
+        if self.selected_scoreboard_mode is None:
+            scores = self.scoreboard.get_top_scores()
+            mode_display = "全部模式"
+        else:
+            scores = self.scoreboard.get_top_scores(self.selected_scoreboard_mode)
+            mode_display = self.selected_scoreboard_mode
+
+        # 当前模式显示
+        current_mode_text = self.font.render(f"当前模式: {mode_display}", True, YELLOW)
+        self.screen.blit(current_mode_text, (SCREEN_WIDTH // 2 - current_mode_text.get_width() // 2, 180))
 
         # 表格标题
         headers = ["排名", "玩家", "分数", "时间", "模式", "日期"]
@@ -692,12 +769,17 @@ class PixelSnakeGame:
             self.screen.blit(mode_val, (570, y))
             self.screen.blit(date_val, (700, y))
 
+        # 添加提示文本
+        hint_text = self.font.render("按0-4选择显示模式，按ESC返回主菜单", True, LIGHT_GRAY)
+        self.screen.blit(hint_text, (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, SCREEN_HEIGHT - 80))
+
         # 返回
         back_text = self.font.render("按ESC返回主菜单", True, GREEN)
         self.screen.blit(back_text, (SCREEN_WIDTH // 2 - back_text.get_width() // 2, SCREEN_HEIGHT - 50))
 
     def run(self):
         while True:
+            self.settings_changed = False
             self.handle_events()
             self.update()
             self.draw()

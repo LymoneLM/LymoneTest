@@ -6,6 +6,10 @@ import os
 import math
 from datetime import datetime
 from enum import Enum
+import locale
+
+# 设置系统编码为UTF-8
+locale.setlocale(locale.LC_ALL, 'zh_CN.UTF-8')
 
 # 初始化pygame
 pygame.init()
@@ -234,7 +238,7 @@ class Scoreboard:
     def load_scores(self):
         if os.path.exists(self.filename):
             try:
-                with open(self.filename, "r") as f:
+                with open(self.filename, "r", encoding='utf-8') as f:
                     data = json.load(f)
                     self.scores = [ScoreEntry.from_dict(entry) for entry in data]
             except:
@@ -244,8 +248,8 @@ class Scoreboard:
 
     def save_scores(self):
         data = [score.to_dict() for score in self.scores]
-        with open(self.filename, "w") as f:
-            json.dump(data, f, indent=2)
+        with open(self.filename, "w", encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
 
     def add_score(self, score_entry):
         self.scores.append(score_entry)
@@ -268,9 +272,11 @@ class PixelSnakeGame:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("像素贪吃蛇")
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont(None, 28)
-        self.title_font = pygame.font.SysFont(None, 48)
-        self.small_font = pygame.font.SysFont(None, 24)
+
+        # 使用支持中文的字体
+        self.font = self.load_font(28)
+        self.title_font = self.load_font(48)
+        self.small_font = self.load_font(24)
 
         # 游戏状态
         self.game_state = "menu"  # menu, playing, paused, game_over
@@ -302,6 +308,13 @@ class PixelSnakeGame:
         # 创建一些虚拟分数用于测试
         if not self.scoreboard.scores:
             self._create_dummy_scores()
+
+    def load_font(self, size):
+        try:
+            font = pygame.font.SysFont("Microsoft YaHei", size)
+            return font
+        except:
+            return pygame.font.SysFont(None, size)
 
     def _create_dummy_scores(self):
         modes = [GameMode.CLASSIC, GameMode.ENDLESS, GameMode.TIMED, GameMode.OBSTACLE]

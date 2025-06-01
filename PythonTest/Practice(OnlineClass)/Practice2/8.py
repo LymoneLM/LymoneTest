@@ -1,0 +1,5 @@
+scores = list(map(float, input().strip().split(',')))
+scores.remove(max(scores))
+scores.remove(min(scores))
+average = sum(scores) / len(scores)
+print(f"{average:.2f}")

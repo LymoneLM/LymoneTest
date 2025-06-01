@@ -306,10 +306,6 @@ class PixelSnakeGame:
         self.sound_volume = 0.5
         self.music_volume = 0.3
 
-        # 创建一些虚拟分数用于测试
-        if not self.scoreboard.scores:
-            self._create_dummy_scores()
-
         # 加载设置
         self.load_settings()
 
@@ -320,7 +316,7 @@ class PixelSnakeGame:
     @staticmethod
     def load_font(size):
         try:
-            font = pygame.font.Font("./assets/MiSans-Normal.ttf", size)
+            font = pygame.font.Font("./MiSans-Normal.ttf", size)
             return font
         except:
             return pygame.font.SysFont("Microsoft YaHei", size)

@@ -5,14 +5,13 @@
 #include <map>
 #include <iomanip>
 #include <memory>
-#include <cctype> // 添加头文件用于大小写转换
 
 using namespace std;
 
-// 定义测试开关
+// 测试开关
 #define TEST_MODE 1
 
-// 基类：成绩成员
+// 基类
 class ChengJiMember {
 protected:
     string xingming;
@@ -39,7 +38,7 @@ public:
     }
 };
 
-// 普通学生类
+// 普通学生
 class PuTongStudent : public ChengJiMember {
 private:
     map<string, double> chengji; // 科目-成绩映射
@@ -69,20 +68,18 @@ public:
         chengji[kemu] = score;
     }
 
-    // 添加科目
     void addSubject(const string& kemu) override {
         if (chengji.find(kemu) == chengji.end()) {
             chengji[kemu] = 0.0;
         }
     }
 
-    // 删除科目
     void removeSubject(const string& kemu) override {
         chengji.erase(kemu);
     }
 };
 
-// 旁听学生类
+// 旁听学生
 class PangTingStudent : public ChengJiMember {
 private:
     map<string, double> chengji;
@@ -130,20 +127,17 @@ private:
     vector<string> kemuList; // 科目列表
 
 public:
-    // 添加学生
     void addStudent(bool isPutong, const string& name, const string& id) {
         if (isPutong) {
             xueshengList.push_back(make_unique<PuTongStudent>(name, id));
         } else {
             xueshengList.push_back(make_unique<PangTingStudent>(name, id));
         }
-        // 为新学生初始化所有科目
         for (const auto& kemu : kemuList) {
             xueshengList.back()->addSubject(kemu);
         }
     }
 
-    // 删除学生
     bool delStudent(const string& id) {
         auto it = find_if(xueshengList.begin(), xueshengList.end(),
             [&](const unique_ptr<ChengJiMember>& s) {
@@ -157,7 +151,6 @@ public:
         return false;
     }
 
-    // 查询学生
     ChengJiMember* findStudent(const string& key) {
         for (auto& s : xueshengList) {
             if (s->getID() == key || s->getName() == key) {
@@ -167,30 +160,25 @@ public:
         return nullptr;
     }
 
-    // 添加科目
     void addSubject(const string& kemu) {
         if (find(kemuList.begin(), kemuList.end(), kemu) == kemuList.end()) {
             kemuList.push_back(kemu);
-            // 为所有学生添加新科目
             for (auto& s : xueshengList) {
                 s->addSubject(kemu);
             }
         }
     }
 
-    // 删除科目
     void delSubject(const string& kemu) {
         auto it = find(kemuList.begin(), kemuList.end(), kemu);
         if (it != kemuList.end()) {
             kemuList.erase(it);
-            // 从所有学生中删除该科目
             for (auto& s : xueshengList) {
                 s->removeSubject(kemu);
             }
         }
     }
 
-    // 修改成绩
     void modScore(const string& stuKey, const string& kemu, double score) {
         auto stu = findStudent(stuKey);
         if (stu) {
@@ -213,13 +201,12 @@ public:
         return;
     }
 
-    // 复制指针用于排序
+    // 排序
     vector<ChengJiMember*> tempList;
     for (auto& s : xueshengList) {
         tempList.push_back(s.get());
     }
 
-    // 排序逻辑
     if (!byID && !sortKemu.empty()) {
         sort(tempList.begin(), tempList.end(),
             [&](ChengJiMember* a, ChengJiMember* b) {
@@ -232,7 +219,6 @@ public:
             });
     }
 
-    // 计算最大宽度
     int idWidth = 10, nameWidth = 10;
     for (auto s : tempList) {
         if (s->getID().length() > idWidth) idWidth = s->getID().length() + 2;
@@ -241,7 +227,6 @@ public:
     idWidth = max(idWidth, 6);
     nameWidth = max(nameWidth, 6);
 
-    // 打印表头
     cout << "\n" << left
          << setw(idWidth) << "学号"
          << setw(nameWidth) << "姓名";
@@ -251,11 +236,9 @@ public:
     }
     cout << "类型" << endl;
 
-    // 打印分隔线
     int totalWidth = idWidth + nameWidth + kemuList.size()*12 + 10;
     cout << string(totalWidth, '-') << endl;
 
-    // 打印学生数据
     for (auto s : tempList) {
         cout << left
              << setw(idWidth) << s->getID()
@@ -270,7 +253,6 @@ public:
             }
         }
 
-        // 动态显示学生类型
         if (dynamic_cast<PuTongStudent*>(s)) {
             cout << "[普通生]";
         } else if (dynamic_cast<PangTingStudent*>(s)) {
@@ -279,7 +261,6 @@ public:
         cout << endl;
     }
 
-    // 计算平均分
     if (!kemuList.empty()) {
         cout << "\n" << setw(idWidth) << "平均分:"
              << setw(nameWidth) << " ";
@@ -304,6 +285,8 @@ public:
 
     // 生成测试数据
     void generateTestData() {
+        cout << "\n===== 加载测试数据 =====\n";
+
         addSubject("语文");
         addSubject("数学");
         addSubject("英语");
@@ -322,6 +305,8 @@ public:
         modScore("2023003", "语文", 92.5);
         modScore("2023003", "数学", 65.0);
         modScore("2023003", "英语", 85.0);
+
+        cout << "======================\n";
     }
 };
 
@@ -331,7 +316,6 @@ void userMenu() {
 
 #if TEST_MODE
     manager.generateTestData();
-    cout << "已加载测试数据\n";
 #endif
 
     while (true) {
@@ -349,8 +333,6 @@ void userMenu() {
 
         int choice;
         cin >> choice;
-
-        // 清除输入缓冲区
         cin.ignore();
 
         string name, id, kemu;
@@ -362,7 +344,7 @@ void userMenu() {
                 cout << "学生类型 (1.普通 2.旁听): ";
                 int type;
                 cin >> type;
-                cin.ignore(); // 清除换行符
+                cin.ignore();
 
                 cout << "姓名: ";
                 getline(cin, name);
@@ -402,7 +384,7 @@ void userMenu() {
                 getline(cin, kemu);
                 cout << "输入新成绩: ";
                 cin >> score;
-                cin.ignore(); // 清除换行符
+                cin.ignore();
 
                 manager.modScore(id, kemu, score);
                 break;
@@ -411,7 +393,7 @@ void userMenu() {
                 cout << "排序方式 (1.学号 2.科目成绩): ";
                 int sortType;
                 cin >> sortType;
-                cin.ignore(); // 清除换行符
+                cin.ignore();
 
                 if (sortType == 2) {
                     cout << "输入排序科目: ";

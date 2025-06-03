@@ -1,0 +1,8 @@
+.idea/
+venv/
+data/
+output/
+# doc
+docs/案例正文_网易云音乐大数据系统.docx
+docs/案例讲解_网易云音乐大数据系统.pptx
+docs/案例说明_网易云音乐大数据系统.docx

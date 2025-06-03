@@ -5,6 +5,7 @@
 #include <map>
 #include <iomanip>
 #include <memory>
+#include <cctype> // 添加头文件用于大小写转换
 
 using namespace std;
 
@@ -24,6 +25,10 @@ public:
     virtual void xianshi(const vector<string>& kemu) const = 0;
     virtual double getKemuScore(const string& kemu) const = 0;
     virtual void xiugaiScore(const string& kemu, double score) = 0;
+
+    // 添加科目和删除科目方法
+    virtual void addSubject(const string& kemu) = 0;
+    virtual void removeSubject(const string& kemu) = 0;
 
     string getName() const { return xingming; }
     string getID() const { return xuehao; }
@@ -64,15 +69,15 @@ public:
         chengji[kemu] = score;
     }
 
-    // 添加科目成绩（用于初始化）
-    void addSubject(const string& kemu) {
+    // 添加科目
+    void addSubject(const string& kemu) override {
         if (chengji.find(kemu) == chengji.end()) {
             chengji[kemu] = 0.0;
         }
     }
 
     // 删除科目
-    void removeSubject(const string& kemu) {
+    void removeSubject(const string& kemu) override {
         chengji.erase(kemu);
     }
 };
@@ -107,13 +112,13 @@ public:
         chengji[kemu] = score;
     }
 
-    void addSubject(const string& kemu) {
+    void addSubject(const string& kemu) override {
         if (chengji.find(kemu) == chengji.end()) {
             chengji[kemu] = 0.0;
         }
     }
 
-    void removeSubject(const string& kemu) {
+    void removeSubject(const string& kemu) override {
         chengji.erase(kemu);
     }
 };
@@ -192,12 +197,22 @@ public:
             // 检查科目是否存在
             if (find(kemuList.begin(), kemuList.end(), kemu) != kemuList.end()) {
                 stu->xiugaiScore(kemu, score);
+                cout << "成绩修改成功!\n";
+            } else {
+                cout << "错误: 科目不存在!\n";
             }
+        } else {
+            cout << "错误: 学生不存在!\n";
         }
     }
 
     // 展示表单
     void display(bool byID = true, const string& sortKemu = "") {
+        if (xueshengList.empty()) {
+            cout << "\n表单为空!\n";
+            return;
+        }
+
         // 复制指针用于排序
         vector<ChengJiMember*> tempList;
         for (auto& s : xueshengList) {
@@ -231,15 +246,19 @@ public:
         }
 
         // 计算平均分
-        cout << "\n平均分:   ";
-        for (const auto& k : kemuList) {
-            double sum = 0;
-            for (auto s : tempList) {
-                sum += s->getKemuScore(k);
+        if (!kemuList.empty()) {
+            cout << "\n平均分:   ";
+            for (const auto& k : kemuList) {
+                double sum = 0;
+                for (auto s : tempList) {
+                    sum += s->getKemuScore(k);
+                }
+                cout << setw(10) << fixed << setprecision(1) << (sum / tempList.size());
             }
-            cout << setw(10) << fixed << setprecision(1) << (sum / tempList.size());
+            cout << endl;
         }
-        cout << endl << endl;
+
+        cout << endl;
     }
 
     // 生成测试数据
@@ -275,19 +294,23 @@ void userMenu() {
 #endif
 
     while (true) {
-        cout << "\n===== 学生成绩管理系统 =====\n";
-        cout << "1. 插入学生\n";
-        cout << "2. 删除学生\n";
-        cout << "3. 查询学生\n";
-        cout << "4. 修改成绩\n";
-        cout << "5. 展示表单\n";
-        cout << "6. 添加科目\n";
-        cout << "7. 删除科目\n";
-        cout << "0. 退出系统\n";
-        cout << "请选择操作: ";
+        cout << "\n===== 学生成绩管理系统 =====";
+        cout << "\n1. 插入学生";
+        cout << "\n2. 删除学生";
+        cout << "\n3. 查询学生";
+        cout << "\n4. 修改成绩";
+        cout << "\n5. 展示表单";
+        cout << "\n6. 添加科目";
+        cout << "\n7. 删除科目";
+        cout << "\n0. 退出系统";
+        cout << "\n=========================";
+        cout << "\n请选择操作: ";
 
         int choice;
         cin >> choice;
+
+        // 清除输入缓冲区
+        cin.ignore();
 
         string name, id, kemu;
         double score;
@@ -298,17 +321,20 @@ void userMenu() {
                 cout << "学生类型 (1.普通 2.旁听): ";
                 int type;
                 cin >> type;
+                cin.ignore(); // 清除换行符
+
                 cout << "姓名: ";
-                cin >> name;
+                getline(cin, name);
                 cout << "学号: ";
-                cin >> id;
+                getline(cin, id);
+
                 manager.addStudent(type == 1, name, id);
                 cout << "添加成功!\n";
                 break;
             }
             case 2: {
                 cout << "输入学号: ";
-                cin >> id;
+                getline(cin, id);
                 if (manager.delStudent(id)) {
                     cout << "删除成功!\n";
                 } else {
@@ -318,7 +344,7 @@ void userMenu() {
             }
             case 3: {
                 cout << "输入学号或姓名: ";
-                cin >> id;
+                getline(cin, id);
                 stu = manager.findStudent(id);
                 if (stu) {
                     cout << "找到学生: " << stu->getName()
@@ -330,22 +356,25 @@ void userMenu() {
             }
             case 4: {
                 cout << "输入学号或姓名: ";
-                cin >> id;
+                getline(cin, id);
                 cout << "输入科目: ";
-                cin >> kemu;
+                getline(cin, kemu);
                 cout << "输入新成绩: ";
                 cin >> score;
+                cin.ignore(); // 清除换行符
+
                 manager.modScore(id, kemu, score);
-                cout << "修改成功!\n";
                 break;
             }
             case 5: {
                 cout << "排序方式 (1.学号 2.科目成绩): ";
                 int sortType;
                 cin >> sortType;
+                cin.ignore(); // 清除换行符
+
                 if (sortType == 2) {
                     cout << "输入排序科目: ";
-                    cin >> kemu;
+                    getline(cin, kemu);
                     manager.display(false, kemu);
                 } else {
                     manager.display();
@@ -354,14 +383,14 @@ void userMenu() {
             }
             case 6: {
                 cout << "输入新科目名称: ";
-                cin >> kemu;
+                getline(cin, kemu);
                 manager.addSubject(kemu);
                 cout << "添加成功!\n";
                 break;
             }
             case 7: {
                 cout << "输入删除科目名称: ";
-                cin >> kemu;
+                getline(cin, kemu);
                 manager.delSubject(kemu);
                 cout << "删除成功!\n";
                 break;

@@ -208,58 +208,99 @@ public:
 
     // 展示表单
     void display(bool byID = true, const string& sortKemu = "") {
-        if (xueshengList.empty()) {
-            cout << "\n表单为空!\n";
-            return;
-        }
+    if (xueshengList.empty()) {
+        cout << "\n表单为空!\n";
+        return;
+    }
 
-        // 复制指针用于排序
-        vector<ChengJiMember*> tempList;
-        for (auto& s : xueshengList) {
-            tempList.push_back(s.get());
-        }
+    // 复制指针用于排序
+    vector<ChengJiMember*> tempList;
+    for (auto& s : xueshengList) {
+        tempList.push_back(s.get());
+    }
 
-        // 排序逻辑
-        if (!byID && !sortKemu.empty()) {
-            sort(tempList.begin(), tempList.end(),
-                [&](ChengJiMember* a, ChengJiMember* b) {
-                    return a->getKemuScore(sortKemu) > b->getKemuScore(sortKemu);
-                });
-        } else {
-            sort(tempList.begin(), tempList.end(),
-                [](ChengJiMember* a, ChengJiMember* b) {
-                    return *a < *b;
-                });
-        }
+    // 排序逻辑
+    if (!byID && !sortKemu.empty()) {
+        sort(tempList.begin(), tempList.end(),
+            [&](ChengJiMember* a, ChengJiMember* b) {
+                return a->getKemuScore(sortKemu) > b->getKemuScore(sortKemu);
+            });
+    } else {
+        sort(tempList.begin(), tempList.end(),
+            [](ChengJiMember* a, ChengJiMember* b) {
+                return *a < *b;
+            });
+    }
 
-        // 打印表头
-        cout << "\n学号      姓名      ";
+    // 计算最大宽度
+    int idWidth = 10, nameWidth = 10;
+    for (auto s : tempList) {
+        if (s->getID().length() > idWidth) idWidth = s->getID().length() + 2;
+        if (s->getName().length() > nameWidth) nameWidth = s->getName().length() + 2;
+    }
+    idWidth = max(idWidth, 6);
+    nameWidth = max(nameWidth, 6);
+
+    // 打印表头
+    cout << "\n" << left
+         << setw(idWidth) << "学号"
+         << setw(nameWidth) << "姓名";
+
+    for (const auto& k : kemuList) {
+        cout << setw(12) << k;
+    }
+    cout << "类型" << endl;
+
+    // 打印分隔线
+    int totalWidth = idWidth + nameWidth + kemuList.size()*12 + 10;
+    cout << string(totalWidth, '-') << endl;
+
+    // 打印学生数据
+    for (auto s : tempList) {
+        cout << left
+             << setw(idWidth) << s->getID()
+             << setw(nameWidth) << s->getName();
+
         for (const auto& k : kemuList) {
-            cout << setw(10) << k;
-        }
-        cout << "类型" << endl;
-        cout << string(20 + kemuList.size()*10, '-') << endl;
-
-        // 打印学生数据
-        for (auto s : tempList) {
-            s->xianshi(kemuList);
-        }
-
-        // 计算平均分
-        if (!kemuList.empty()) {
-            cout << "\n平均分:   ";
-            for (const auto& k : kemuList) {
-                double sum = 0;
-                for (auto s : tempList) {
-                    sum += s->getKemuScore(k);
-                }
-                cout << setw(10) << fixed << setprecision(1) << (sum / tempList.size());
+            double score = s->getKemuScore(k);
+            if (score == static_cast<int>(score)) {
+                cout << setw(12) << static_cast<int>(score);
+            } else {
+                cout << setw(12) << fixed << setprecision(1) << score;
             }
-            cout << endl;
         }
 
+        // 动态显示学生类型
+        if (dynamic_cast<PuTongStudent*>(s)) {
+            cout << "[普通生]";
+        } else if (dynamic_cast<PangTingStudent*>(s)) {
+            cout << "[旁听生]";
+        }
         cout << endl;
     }
+
+    // 计算平均分
+    if (!kemuList.empty()) {
+        cout << "\n" << setw(idWidth) << "平均分:"
+             << setw(nameWidth) << " ";
+
+        for (const auto& k : kemuList) {
+            double sum = 0;
+            for (auto s : tempList) {
+                sum += s->getKemuScore(k);
+            }
+            double avg = sum / tempList.size();
+
+            if (avg == static_cast<int>(avg)) {
+                cout << setw(12) << static_cast<int>(avg);
+            } else {
+                cout << setw(12) << fixed << setprecision(2) << avg;
+            }
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
 
     // 生成测试数据
     void generateTestData() {

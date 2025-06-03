@@ -1,525 +1,381 @@
 #include <iostream>
 #include <vector>
-#include <string>
 #include <algorithm>
+#include <string>
+#include <map>
 #include <iomanip>
 #include <memory>
-#include <stdexcept>
-#include <typeinfo>
+
 using namespace std;
 
-// 列基类
-class Column {
+// 定义测试开关
+#define TEST_MODE 1
+
+// 基类：成绩成员
+class ChengJiMember {
+protected:
+    string xingming;
+    string xuehao;
 public:
-    string name;
-    Column(const string& n) : name(n) {}
-    virtual ~Column() {}
-    virtual void display() const = 0;
-    virtual unique_ptr<Column> clone() const = 0;
-    virtual double getNumericValue(const string& val) const { return 0.0; }
+    ChengJiMember(const string& name, const string& id)
+        : xingming(name), xuehao(id) {}
+    virtual ~ChengJiMember() = default;
+
+    virtual void xianshi(const vector<string>& kemu) const = 0;
+    virtual double getKemuScore(const string& kemu) const = 0;
+    virtual void xiugaiScore(const string& kemu, double score) = 0;
+
+    string getName() const { return xingming; }
+    string getID() const { return xuehao; }
+
+    // 运算符重载：按学号排序
+    bool operator<(const ChengJiMember& other) const {
+        return xuehao < other.xuehao;
+    }
 };
 
-// 元对象列（如姓名、学号）
-class MetaColumn : public Column {
+// 普通学生类
+class PuTongStudent : public ChengJiMember {
+private:
+    map<string, double> chengji; // 科目-成绩映射
 public:
-    MetaColumn(const string& n) : Column(n) {}
-    void display() const override {
-        cout << "【元数据】" << name;
-    }
-    unique_ptr<Column> clone() const override {
-        return make_unique<MetaColumn>(*this);
-    }
-};
+    PuTongStudent(const string& name, const string& id)
+        : ChengJiMember(name, id) {}
 
-// 数据对象列（如科目成绩）
-class DataColumn : public Column {
-public:
-    DataColumn(const string& n) : Column(n) {}
-    void display() const override {
-        cout << "【科目】" << name;
+    void xianshi(const vector<string>& kemu) const override {
+        cout << left << setw(10) << xuehao << setw(10) << xingming;
+        for (const auto& k : kemu) {
+            auto it = chengji.find(k);
+            if (it != chengji.end()) {
+                cout << setw(10) << it->second;
+            } else {
+                cout << setw(10) << "0";
+            }
+        }
+        cout << "[普通生]" << endl;
     }
-    unique_ptr<Column> clone() const override {
-        return make_unique<DataColumn>(*this);
+
+    double getKemuScore(const string& kemu) const override {
+        auto it = chengji.find(kemu);
+        return (it != chengji.end()) ? it->second : 0.0;
     }
-    double getNumericValue(const string& val) const override {
-        try {
-            return stod(val);
-        } catch (...) {
-            return 0.0;
+
+    void xiugaiScore(const string& kemu, double score) override {
+        chengji[kemu] = score;
+    }
+
+    // 添加科目成绩（用于初始化）
+    void addSubject(const string& kemu) {
+        if (chengji.find(kemu) == chengji.end()) {
+            chengji[kemu] = 0.0;
         }
     }
+
+    // 删除科目
+    void removeSubject(const string& kemu) {
+        chengji.erase(kemu);
+    }
 };
 
-// 行基类
-class Row {
-protected:
-    vector<string> values;
+// 旁听学生类
+class PangTingStudent : public ChengJiMember {
+private:
+    map<string, double> chengji;
 public:
-    virtual ~Row() {}
-    virtual void display(const vector<unique_ptr<Column>>& columns) const = 0;
-    virtual unique_ptr<Row> clone() const = 0;
+    PangTingStudent(const string& name, const string& id)
+        : ChengJiMember(name, id) {}
 
-    // 运算符重载：比较学号
-    bool operator==(const string& id) const {
-        if (values.size() > 1) {
-            return values[1] == id;
+    void xianshi(const vector<string>& kemu) const override {
+        cout << left << setw(10) << xuehao << setw(10) << xingming;
+        for (const auto& k : kemu) {
+            auto it = chengji.find(k);
+            if (it != chengji.end()) {
+                cout << setw(10) << it->second;
+            } else {
+                cout << setw(10) << "0";
+            }
+        }
+        cout << "[旁听生]" << endl;
+    }
+
+    double getKemuScore(const string& kemu) const override {
+        auto it = chengji.find(kemu);
+        return (it != chengji.end()) ? it->second : 0.0;
+    }
+
+    void xiugaiScore(const string& kemu, double score) override {
+        chengji[kemu] = score;
+    }
+
+    void addSubject(const string& kemu) {
+        if (chengji.find(kemu) == chengji.end()) {
+            chengji[kemu] = 0.0;
+        }
+    }
+
+    void removeSubject(const string& kemu) {
+        chengji.erase(kemu);
+    }
+};
+
+// 成绩管理系统
+class ChengJiGuanLi {
+private:
+    vector<unique_ptr<ChengJiMember>> xueshengList; // 学生列表
+    vector<string> kemuList; // 科目列表
+
+public:
+    // 添加学生
+    void addStudent(bool isPutong, const string& name, const string& id) {
+        if (isPutong) {
+            xueshengList.push_back(make_unique<PuTongStudent>(name, id));
+        } else {
+            xueshengList.push_back(make_unique<PangTingStudent>(name, id));
+        }
+        // 为新学生初始化所有科目
+        for (const auto& kemu : kemuList) {
+            xueshengList.back()->addSubject(kemu);
+        }
+    }
+
+    // 删除学生
+    bool delStudent(const string& id) {
+        auto it = find_if(xueshengList.begin(), xueshengList.end(),
+            [&](const unique_ptr<ChengJiMember>& s) {
+                return s->getID() == id;
+            });
+
+        if (it != xueshengList.end()) {
+            xueshengList.erase(it);
+            return true;
         }
         return false;
     }
 
-    void setValue(int index, const string& value) {
-        if (index >= 0 && index < values.size()) {
-            values[index] = value;
-        }
-    }
-
-    string getValue(int index) const {
-        if (index >= 0 && index < values.size()) {
-            return values[index];
-        }
-        return "";
-    }
-};
-
-// 普通学生行
-class RegularStudent : public Row {
-public:
-    RegularStudent(const string& name, const string& id) {
-        values.push_back(name);
-        values.push_back(id);
-    }
-
-    void display(const vector<unique_ptr<Column>>& columns) const override {
-        cout << "普通学生: ";
-        for (size_t i = 0; i < values.size(); ++i) {
-            cout << left << setw(12) << values[i];
-        }
-    }
-
-    unique_ptr<Row> clone() const override {
-        auto newRow = make_unique<RegularStudent>(values[0], values[1]);
-        for (size_t i = 2; i < values.size(); ++i) {
-            newRow->values.push_back(values[i]);
-        }
-        return newRow;
-    }
-};
-
-// 旁听学生行
-class AuditStudent : public Row {
-public:
-    AuditStudent(const string& name, const string& id) {
-        values.push_back(name);
-        values.push_back(id);
-    }
-
-    void display(const vector<unique_ptr<Column>>& columns) const override {
-        cout << "旁听学生: ";
-        for (size_t i = 0; i < values.size(); ++i) {
-            if (i == 0) {
-                cout << left << setw(12) << (values[i] + "(旁)");
-            } else {
-                cout << left << setw(12) << values[i];
-            }
-        }
-    }
-
-    unique_ptr<Row> clone() const override {
-        auto newRow = make_unique<AuditStudent>(values[0], values[1]);
-        for (size_t i = 2; i < values.size(); ++i) {
-            newRow->values.push_back(values[i]);
-        }
-        return newRow;
-    }
-};
-
-// 学生成绩表单
-class GradeForm {
-private:
-    vector<unique_ptr<Column>> columns;
-    vector<unique_ptr<Row>> rows;
-
-public:
-    GradeForm() {
-        // 添加默认列
-        columns.push_back(make_unique<MetaColumn>("姓名"));
-        columns.push_back(make_unique<MetaColumn>("学号"));
-    }
-
-    // 添加列
-    void addColumn(const string& name, bool isSubject = true) {
-        if (isSubject) {
-            columns.push_back(make_unique<DataColumn>(name));
-        } else {
-            columns.push_back(make_unique<MetaColumn>(name));
-        }
-
-        // 为现有行添加新列的值
-        for (auto& row : rows) {
-            row->setValue(columns.size() - 1, "0");
-        }
-    }
-
-    // 删除列
-    void deleteColumn(int index) {
-        if (index < 2) {
-            cout << "不能删除姓名或学号列!" << endl;
-            return;
-        }
-
-        if (index >= 0 && index < static_cast<int>(columns.size())) {
-            columns.erase(columns.begin() + index);
-
-            // 从每行中移除该列的值
-            for (auto& row : rows) {
-                // 创建新行，跳过被删除的列
-                auto newRow = row->clone();
-                rows.push_back(move(newRow));
-                rows.erase(remove_if(rows.begin(), rows.end(),
-                    [&](const unique_ptr<Row>& r) { return r.get() == row.get(); }),
-                    rows.end());
-            }
-        } else {
-            cout << "无效的列索引!" << endl;
-        }
-    }
-
-    // 添加学生
-    void addStudent(unique_ptr<Row> student) {
-        // 检查学号是否重复
-        string id = student->getValue(1);
-        auto it = find_if(rows.begin(), rows.end(),
-            [&](const unique_ptr<Row>& r) { return *r == id; });
-
-        if (it != rows.end()) {
-            cout << "学号 " << id << " 已存在，不能重复添加!" << endl;
-            return;
-        }
-
-        // 确保学生数据有所有列的值
-        while (student->getValue(columns.size() - 1) == "") {
-            student->setValue(columns.size() - 1, "0");
-        }
-
-        rows.push_back(move(student));
-    }
-
-    // 删除学生
-    void deleteStudent(const string& id) {
-        auto it = find_if(rows.begin(), rows.end(),
-            [&](const unique_ptr<Row>& r) { return *r == id; });
-
-        if (it != rows.end()) {
-            rows.erase(it);
-            cout << "学号 " << id << " 的学生已删除" << endl;
-        } else {
-            cout << "找不到学号 " << id << " 的学生" << endl;
-        }
-    }
-
     // 查询学生
-    void findStudent(const string& id) const {
-        auto it = find_if(rows.begin(), rows.end(),
-            [&](const unique_ptr<Row>& r) { return *r == id; });
+    ChengJiMember* findStudent(const string& key) {
+        for (auto& s : xueshengList) {
+            if (s->getID() == key || s->getName() == key) {
+                return s.get();
+            }
+        }
+        return nullptr;
+    }
 
-        if (it != rows.end()) {
-            displayHeader();
-            (*it)->display(columns);
-            cout << endl;
-        } else {
-            cout << "找不到学号 " << id << " 的学生" << endl;
+    // 添加科目
+    void addSubject(const string& kemu) {
+        if (find(kemuList.begin(), kemuList.end(), kemu) == kemuList.end()) {
+            kemuList.push_back(kemu);
+            // 为所有学生添加新科目
+            for (auto& s : xueshengList) {
+                s->addSubject(kemu);
+            }
+        }
+    }
+
+    // 删除科目
+    void delSubject(const string& kemu) {
+        auto it = find(kemuList.begin(), kemuList.end(), kemu);
+        if (it != kemuList.end()) {
+            kemuList.erase(it);
+            // 从所有学生中删除该科目
+            for (auto& s : xueshengList) {
+                s->removeSubject(kemu);
+            }
         }
     }
 
     // 修改成绩
-    void updateGrade(const string& id, int colIndex, const string& newValue) {
-        if (colIndex < 2 || colIndex >= static_cast<int>(columns.size())) {
-            cout << "无效的列索引!" << endl;
-            return;
-        }
-
-        auto it = find_if(rows.begin(), rows.end(),
-            [&](const unique_ptr<Row>& r) { return *r == id; });
-
-        if (it != rows.end()) {
-            // 验证输入
-            try {
-                if (dynamic_cast<DataColumn*>(columns[colIndex].get())) {
-                    double value = stod(newValue);
-                    if (value < 0 || value > 100) {
-                        cout << "成绩必须在0-100之间!" << endl;
-                        return;
-                    }
-                }
-            } catch (...) {
-                cout << "无效的成绩格式!" << endl;
-                return;
+    void modScore(const string& stuKey, const string& kemu, double score) {
+        auto stu = findStudent(stuKey);
+        if (stu) {
+            // 检查科目是否存在
+            if (find(kemuList.begin(), kemuList.end(), kemu) != kemuList.end()) {
+                stu->xiugaiScore(kemu, score);
             }
-
-            (*it)->setValue(colIndex, newValue);
-            cout << "成绩更新成功!" << endl;
-        } else {
-            cout << "找不到学号 " << id << " 的学生" << endl;
         }
-    }
-
-    // 显示表头
-    void displayHeader() const {
-        for (const auto& col : columns) {
-            cout << left << setw(12) << col->name.substr(0, 10);
-        }
-        cout << endl;
-
-        for (size_t i = 0; i < columns.size(); ++i) {
-            cout << left << setw(12) << "---------";
-        }
-        cout << endl;
     }
 
     // 展示表单
-    void display() const {
-        if (rows.empty()) {
-            cout << "表单为空!" << endl;
-            return;
+    void display(bool byID = true, const string& sortKemu = "") {
+        // 复制指针用于排序
+        vector<ChengJiMember*> tempList;
+        for (auto& s : xueshengList) {
+            tempList.push_back(s.get());
         }
 
-        displayHeader();
-        for (const auto& row : rows) {
-            row->display(columns);
-            cout << endl;
-        }
-    }
-
-    // 按列排序
-    void sortByColumn(int colIndex) {
-        if (colIndex < 0 || colIndex >= static_cast<int>(columns.size())) {
-            cout << "无效的列索引!" << endl;
-            return;
-        }
-
-        sort(rows.begin(), rows.end(),
-            [&](const unique_ptr<Row>& a, const unique_ptr<Row>& b) {
-                string valA = a->getValue(colIndex);
-                string valB = b->getValue(colIndex);
-
-                // 如果是成绩列，按数值比较
-                if (dynamic_cast<DataColumn*>(columns[colIndex].get())) {
-                    try {
-                        double numA = stod(valA);
-                        double numB = stod(valB);
-                        return numA > numB;
-                    } catch (...) {
-                        return valA > valB;
-                    }
-                }
-                // 否则按字符串比较
-                return valA > valB;
-            });
-
-        cout << "已按 " << columns[colIndex]->name << " 降序排序" << endl;
-    }
-
-    // 计算平均分
-    void calculateAverage(int colIndex) const {
-        if (colIndex < 2 || colIndex >= static_cast<int>(columns.size())) {
-            cout << "无效的列索引!" << endl;
-            return;
-        }
-
-        if (!dynamic_cast<DataColumn*>(columns[colIndex].get())) {
-            cout << "该列不是科目成绩列!" << endl;
-            return;
-        }
-
-        double total = 0.0;
-        int count = 0;
-
-        for (const auto& row : rows) {
-            string value = row->getValue(colIndex);
-            try {
-                double grade = stod(value);
-                total += grade;
-                count++;
-            } catch (...) {
-                // 忽略无效成绩
-            }
-        }
-
-        if (count > 0) {
-            cout << columns[colIndex]->name << " 平均分: "
-                 << fixed << setprecision(2) << (total / count) << endl;
+        // 排序逻辑
+        if (!byID && !sortKemu.empty()) {
+            sort(tempList.begin(), tempList.end(),
+                [&](ChengJiMember* a, ChengJiMember* b) {
+                    return a->getKemuScore(sortKemu) > b->getKemuScore(sortKemu);
+                });
         } else {
-            cout << "没有有效的成绩数据!" << endl;
+            sort(tempList.begin(), tempList.end(),
+                [](ChengJiMember* a, ChengJiMember* b) {
+                    return *a < *b;
+                });
         }
-    }
 
-    // 获取列数
-    int getColumnCount() const {
-        return columns.size();
-    }
-
-    // 获取列名
-    string getColumnName(int index) const {
-        if (index >= 0 && index < static_cast<int>(columns.size())) {
-            return columns[index]->name;
+        // 打印表头
+        cout << "\n学号      姓名      ";
+        for (const auto& k : kemuList) {
+            cout << setw(10) << k;
         }
-        return "";
-    }
+        cout << "类型" << endl;
+        cout << string(20 + kemuList.size()*10, '-') << endl;
 
-    // 显示所有列
-    void displayColumns() const {
-        cout << "当前列 (" << columns.size() << "):" << endl;
-        for (size_t i = 0; i < columns.size(); ++i) {
-            cout << i << ": " << columns[i]->name;
-            if (dynamic_cast<MetaColumn*>(columns[i].get())) {
-                cout << " (元数据)";
-            } else {
-                cout << " (科目)";
+        // 打印学生数据
+        for (auto s : tempList) {
+            s->xianshi(kemuList);
+        }
+
+        // 计算平均分
+        cout << "\n平均分:   ";
+        for (const auto& k : kemuList) {
+            double sum = 0;
+            for (auto s : tempList) {
+                sum += s->getKemuScore(k);
             }
-            cout << endl;
+            cout << setw(10) << fixed << setprecision(1) << (sum / tempList.size());
         }
+        cout << endl << endl;
+    }
+
+    // 生成测试数据
+    void generateTestData() {
+        addSubject("语文");
+        addSubject("数学");
+        addSubject("英语");
+
+        addStudent(true, "张三", "2023001");
+        modScore("2023001", "语文", 85.5);
+        modScore("2023001", "数学", 92.0);
+        modScore("2023001", "英语", 78.5);
+
+        addStudent(true, "李四", "2023002");
+        modScore("2023002", "语文", 76.0);
+        modScore("2023002", "数学", 88.5);
+        modScore("2023002", "英语", 92.5);
+
+        addStudent(false, "王五", "2023003");
+        modScore("2023003", "语文", 92.5);
+        modScore("2023003", "数学", 65.0);
+        modScore("2023003", "英语", 85.0);
     }
 };
 
-// 显示菜单
-void displayMenu() {
-    cout << "\n======= 学生成绩管理系统 =======" << endl;
-    cout << "1. 添加学生" << endl;
-    cout << "2. 删除学生" << endl;
-    cout << "3. 查询学生" << endl;
-    cout << "4. 修改成绩" << endl;
-    cout << "5. 添加科目" << endl;
-    cout << "6. 删除科目" << endl;
-    cout << "7. 展示表单" << endl;
-    cout << "8. 按科目排序" << endl;
-    cout << "9. 计算平均分" << endl;
-    cout << "0. 退出系统" << endl;
-    cout << "=============================" << endl;
-    cout << "请选择操作: ";
-}
+// 用户交互菜单
+void userMenu() {
+    ChengJiGuanLi manager;
 
-int main() {
-    GradeForm form;
-    int choice;
+#if TEST_MODE
+    manager.generateTestData();
+    cout << "已加载测试数据\n";
+#endif
 
-    // 添加一些初始数据
-    form.addColumn("数学", true);
-    form.addColumn("英语", true);
-    form.addStudent(make_unique<RegularStudent>("张三", "2023001"));
-    form.addStudent(make_unique<RegularStudent>("李四", "2023002"));
-    form.addStudent(make_unique<AuditStudent>("王五", "2023003"));
+    while (true) {
+        cout << "\n===== 学生成绩管理系统 =====\n";
+        cout << "1. 插入学生\n";
+        cout << "2. 删除学生\n";
+        cout << "3. 查询学生\n";
+        cout << "4. 修改成绩\n";
+        cout << "5. 展示表单\n";
+        cout << "6. 添加科目\n";
+        cout << "7. 删除科目\n";
+        cout << "0. 退出系统\n";
+        cout << "请选择操作: ";
 
-    do {
-        displayMenu();
+        int choice;
         cin >> choice;
 
-        // 清除输入缓冲区
-        cin.ignore();
+        string name, id, kemu;
+        double score;
+        ChengJiMember* stu;
 
         switch (choice) {
-            case 1: { // 添加学生
-                string name, id;
+            case 1: {
+                cout << "学生类型 (1.普通 2.旁听): ";
                 int type;
-
-                cout << "输入学生姓名: ";
-                getline(cin, name);
-                cout << "输入学号: ";
-                getline(cin, id);
-                cout << "选择类型 (1.普通学生 2.旁听学生): ";
                 cin >> type;
-                cin.ignore();
-
-                if (type == 1) {
-                    form.addStudent(make_unique<RegularStudent>(name, id));
-                } else if (type == 2) {
-                    form.addStudent(make_unique<AuditStudent>(name, id));
+                cout << "姓名: ";
+                cin >> name;
+                cout << "学号: ";
+                cin >> id;
+                manager.addStudent(type == 1, name, id);
+                cout << "添加成功!\n";
+                break;
+            }
+            case 2: {
+                cout << "输入学号: ";
+                cin >> id;
+                if (manager.delStudent(id)) {
+                    cout << "删除成功!\n";
                 } else {
-                    cout << "无效的选择!" << endl;
+                    cout << "学号不存在!\n";
                 }
                 break;
             }
-            case 2: { // 删除学生
-                string id;
-                cout << "输入要删除学生的学号: ";
-                getline(cin, id);
-                form.deleteStudent(id);
+            case 3: {
+                cout << "输入学号或姓名: ";
+                cin >> id;
+                stu = manager.findStudent(id);
+                if (stu) {
+                    cout << "找到学生: " << stu->getName()
+                         << "(" << stu->getID() << ")\n";
+                } else {
+                    cout << "未找到学生!\n";
+                }
                 break;
             }
-            case 3: { // 查询学生
-                string id;
-                cout << "输入要查询学生的学号: ";
-                getline(cin, id);
-                form.findStudent(id);
+            case 4: {
+                cout << "输入学号或姓名: ";
+                cin >> id;
+                cout << "输入科目: ";
+                cin >> kemu;
+                cout << "输入新成绩: ";
+                cin >> score;
+                manager.modScore(id, kemu, score);
+                cout << "修改成功!\n";
                 break;
             }
-            case 4: { // 修改成绩
-                string id, newValue;
-                int colIndex;
-
-                cout << "输入学生学号: ";
-                getline(cin, id);
-
-                form.displayColumns();
-                cout << "输入要修改的列索引: ";
-                cin >> colIndex;
-                cin.ignore();
-
-                cout << "输入新值: ";
-                getline(cin, newValue);
-
-                form.updateGrade(id, colIndex, newValue);
+            case 5: {
+                cout << "排序方式 (1.学号 2.科目成绩): ";
+                int sortType;
+                cin >> sortType;
+                if (sortType == 2) {
+                    cout << "输入排序科目: ";
+                    cin >> kemu;
+                    manager.display(false, kemu);
+                } else {
+                    manager.display();
+                }
                 break;
             }
-            case 5: { // 添加科目
-                string subject;
+            case 6: {
                 cout << "输入新科目名称: ";
-                getline(cin, subject);
-                form.addColumn(subject, true);
-                cout << "已添加科目: " << subject << endl;
+                cin >> kemu;
+                manager.addSubject(kemu);
+                cout << "添加成功!\n";
                 break;
             }
-            case 6: { // 删除科目
-                form.displayColumns();
-                int colIndex;
-                cout << "输入要删除的科目索引: ";
-                cin >> colIndex;
-                cin.ignore();
-                form.deleteColumn(colIndex);
+            case 7: {
+                cout << "输入删除科目名称: ";
+                cin >> kemu;
+                manager.delSubject(kemu);
+                cout << "删除成功!\n";
                 break;
             }
-            case 7: // 展示表单
-                form.display();
-                break;
-            case 8: { // 按科目排序
-                form.displayColumns();
-                int colIndex;
-                cout << "输入要排序的列索引: ";
-                cin >> colIndex;
-                cin.ignore();
-                form.sortByColumn(colIndex);
-                break;
-            }
-            case 9: { // 计算平均分
-                form.displayColumns();
-                int colIndex;
-                cout << "输入要计算平均分的科目索引: ";
-                cin >> colIndex;
-                cin.ignore();
-                form.calculateAverage(colIndex);
-                break;
-            }
-            case 0: // 退出系统
-                cout << "感谢使用学生成绩管理系统，再见!" << endl;
-                break;
+            case 0:
+                cout << "系统已退出!\n";
+                return;
             default:
-                cout << "无效的选择，请重新输入!" << endl;
+                cout << "无效选择，请重新输入!\n";
         }
+    }
+}
 
-        if (choice != 0) {
-            cout << "\n按回车键继续...";
-            cin.ignore();
-        }
-    } while (choice != 0);
-
+int main() {
+    userMenu();
     return 0;
 }

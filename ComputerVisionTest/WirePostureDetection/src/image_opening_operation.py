@@ -16,6 +16,15 @@ def opening_operation(input_path, output_path):
     except Exception as e:
         print(f"发生错误: {e}")
 
+def get_opening_operation(input_img):
+    # 定义长度为 8、角度为 0 的线性结构元素
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (12, 1))
+    # 进行开运算
+    opened_image = cv2.morphologyEx(input_img, cv2.MORPH_OPEN, kernel)
+
+    return opened_image
+
+
 
 if __name__ == "__main__":
     input_image_path = '../output/output_gray.png'

@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from src.image_opening_operation import get_opening_operation
 
 
 def canny_edge_detection(image_path, low_threshold, high_threshold):
@@ -27,7 +28,8 @@ def canny_edge_detection(image_path, low_threshold, high_threshold):
     return edges
 
 def get_canny_edge_detection(input_img, low_threshold = 12, high_threshold = 150):
-    edges = cv2.Canny(input_img, low_threshold, high_threshold)
+    opened_img = get_opening_operation(input_img)
+    edges = cv2.Canny(opened_img, low_threshold, high_threshold)
     return edges
 
 

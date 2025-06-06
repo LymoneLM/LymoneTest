@@ -9,5 +9,5 @@ for i in range(2,101):
     if is_prime(i):
         s.append(str(i))
 
-with open(r".\sy8-3.txt","w") as f:
+with open(r"sy8-3.txt", "w") as f:
     f.write(", ".join(s))

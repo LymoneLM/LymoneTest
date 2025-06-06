@@ -109,7 +109,7 @@ def extract_transmission_line(image, left_endpoints, right_end_x):
 # 示例使用
 if __name__ == "__main__":
     # 读取图像（保持灰度图读取，后续转换为彩色图绘制标记）
-    image_gray = cv2.imread('../output/edge_detected_image_region_2.png', cv2.IMREAD_GRAYSCALE)
+    image_gray = cv2.imread('../output/rectified_left1_image.png', cv2.IMREAD_GRAYSCALE)
 
     # 转换为彩色图像用于标注
     image_color = cv2.cvtColor(image_gray, cv2.COLOR_GRAY2BGR)

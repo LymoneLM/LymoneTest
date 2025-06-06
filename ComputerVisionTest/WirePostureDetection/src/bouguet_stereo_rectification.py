@@ -84,6 +84,52 @@ def get_stereo_rectification(left_image, right_image):
             left_image, right_image, R1, P1, R2, P2, camera_matrix_left, dist_coeffs_left,
             camera_matrix_right, dist_coeffs_right, image_size
         )
+
+        def get_valid_mask(img):
+            """创建有效像素的掩码，兼容单通道和三通道图像"""
+            if len(img.shape) == 2:  # 单通道图像
+                return (img > 0).astype(np.uint8) * 255
+            else:  # 多通道图像
+                # 计算每个像素是否在所有通道上都有有效值
+                mask = np.all(img > 0, axis=2).astype(np.uint8) * 255
+                return mask
+
+        # 获取左右图的掩码
+        mask_left = get_valid_mask(processed_left)
+        mask_right = get_valid_mask(processed_right)
+
+        # 计算共同有效区域
+        combined_mask = cv2.bitwise_and(mask_left, mask_right)
+
+        # 找到共同有效区域的外接矩形
+        contours, _ = cv2.findContours(combined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            print("Warning: No valid region found. Returning uncropped images.")
+            return processed_left, processed_right
+
+        # 获取最大轮廓的外接矩形
+        max_contour = max(contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(max_contour)
+
+        # 添加安全边界（确保完全去除边缘）
+        border = 1  # 1像素安全边界
+        x = max(0, x + border)
+        y = max(0, y + border)
+        w = max(0, w - 2 * border)
+        h = max(0, h - 2 * border)
+
+        # 执行裁剪
+        if w > 0 and h > 0:
+            processed_left = processed_left[y:y + h, x:x + w]
+            processed_right = processed_right[y:y + h, x:x + w]
+        else:
+            print("Warning: Crop region invalid. Returning uncropped images.")
+
+        if len(processed_left.shape) == 2:
+            processed_left = cv2.cvtColor(processed_left, cv2.COLOR_GRAY2BGR)
+        if len(processed_right.shape) == 2:
+            processed_right = cv2.cvtColor(processed_right, cv2.COLOR_GRAY2BGR)
+
         return processed_left, processed_right
     return None
 
@@ -91,8 +137,8 @@ def get_stereo_rectification(left_image, right_image):
 if __name__ == "__main__":
 
     # 读取左右图像
-    img_left = cv2.imread('./output/left1_output_image_guided.png')
-    img_right = cv2.imread('./output/right1_output_image_guided.png')
+    img_left = cv2.imread('../output/left1_output_image_guided.png')
+    img_right = cv2.imread('../output/right1_output_image_guided.png')
 
     rectified_img_left, rectified_img_right = get_stereo_rectification(img_left, img_right)
 

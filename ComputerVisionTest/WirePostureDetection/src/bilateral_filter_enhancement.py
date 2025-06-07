@@ -49,6 +49,37 @@ def bilateral_filter_enhancement(input_image_path, output_image_path, d=3, sigma
         print(f"处理过程中发生错误: {str(e)}")
         return None
 
+def get_bilateral_filter_enhancement(input_image):
+    d = 3
+    sigma_color = 20
+    sigma_space = 20
+
+    try:
+        if input_image is None:
+            raise ValueError("无法读取输入图像，请检查文件路径和图像格式")
+
+        # 转换为灰度图像（如果是彩色图像）
+        if len(input_image.shape) == 3:
+            gray_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+        else:
+            gray_image = input_image
+
+        # 应用双边滤波
+        enhanced_image = cv2.bilateralFilter(
+            gray_image,
+            d=d,
+            sigmaColor=sigma_color,
+            sigmaSpace=sigma_space
+        )
+
+        # 自动对比度增强（可选步骤，提升视觉效果）
+        enhanced_image = cv2.equalizeHist(enhanced_image)
+        return enhanced_image
+
+    except Exception as e:
+        print(f"处理过程中发生错误: {str(e)}")
+        return None
+
 
 if __name__ == "__main__":
     # 配置参数

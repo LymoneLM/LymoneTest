@@ -7,6 +7,7 @@ from PyQt5.QtGui import QImage, QPixmap, QFont
 
 from src.image_grayscale_inversion import get_invert_grayscale
 from src.guided_filter_enhancement import get_guided_filter_enhancement
+from src.bilateral_filter_enhancement import get_bilateral_filter_enhancement
 from src.bouguet_stereo_rectification import get_stereo_rectification
 from src.canny import get_canny_edge_detection
 from src.pointpoint import generate_line_plot
@@ -80,16 +81,18 @@ class ImageProcessingApp(QMainWindow):
         import_group = QGroupBox("相机控制")
         import_layout = QVBoxLayout()
 
-        # 添加"<-"按钮
-        self.transfer_btn = QPushButton("<-")
+        self.import_stereo_btn = QPushButton("导入图像")
+        self.import_stereo_btn.setStyleSheet("background-color: #3498db; color: white; font-weight: bold;")
+        self.import_stereo_btn.clicked.connect(self.import_stereo_images)
+
+        self.transfer_btn = QPushButton("回置输出")
         self.transfer_btn.setToolTip("将输出图像移动到输入区")
-        self.transfer_btn.setStyleSheet("background-color: #f39c12; color: white; font-weight: bold; font-size: 16px;")
+        self.transfer_btn.setStyleSheet("background-color: #f39c12; color: white; font-weight: bold;")
         self.transfer_btn.clicked.connect(self.transfer_result_to_input)
 
-        # 只保留双目导入按钮
-        self.import_stereo_btn = QPushButton("导入图像")
-        self.import_stereo_btn.setStyleSheet("background-color: #3498db; color: white;")
-        self.import_stereo_btn.clicked.connect(self.import_stereo_images)
+        self.save_image_btn = QPushButton("保存")
+        self.save_image_btn.setStyleSheet("background-color: #00dd00; color: white; font-weight: bold;")
+        self.save_image_btn.clicked.connect(self.save_image)
 
         self.exit_btn = QPushButton("退出")
         self.exit_btn.setStyleSheet("background-color: #e74c3c; color: white; font-weight: bold;")
@@ -97,6 +100,7 @@ class ImageProcessingApp(QMainWindow):
 
         import_layout.addWidget(self.import_stereo_btn)
         import_layout.addWidget(self.transfer_btn)
+        import_layout.addWidget(self.save_image_btn)
         import_layout.addWidget(self.exit_btn)
         import_group.setLayout(import_layout)
 
@@ -242,6 +246,16 @@ class ImageProcessingApp(QMainWindow):
                 self.statusBar().showMessage(f"已加载图像: {file_paths[0]}")
             else:
                 QMessageBox.warning(self, "错误", "无法加载图像")
+
+    def save_image(self):
+        if self.processed_left is None or self.processed_right is None:
+            QMessageBox.warning(self, "警告", "无输出，保存失败")
+            return
+        output_path = "./output"
+        cv2.imwrite(output_path+"/ui_output_left.png", self.processed_left)
+        cv2.imwrite(output_path+"/ui_output_right.png", self.processed_right)
+
+        self.statusBar().showMessage(f"已将处理结果保存到{output_path}")
 
     def process_image(self, function_name):
         if function_name == "图像立体矫正" and self.is_stereo == False:

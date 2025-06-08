@@ -25,6 +25,8 @@ class ImageProcessingApp(QMainWindow):
         self.processed_image = None
         self.processed_left = None
         self.processed_right = None
+        self.left_mask = None
+        self.right_mask = None
         self.left_image = None
         self.right_image = None
 
@@ -285,19 +287,24 @@ class ImageProcessingApp(QMainWindow):
             elif function_name == "图像去噪":
                 self.processed_left = get_guided_filter_enhancement(self.left_image)
                 if self.is_stereo:
-                    self.processed_right = get_guided_filter_enhancement(self.right_image)
+                    # self.processed_right = get_guided_filter_enhancement(self.right_image)
+                    self.processed_right = get_bilateral_filter_enhancement(self.right_image)
                 self.processed_image = self.processed_left
 
             elif function_name == "图像立体矫正":
-                self.processed_left, self.processed_right = get_stereo_rectification(
+                self.processed_left, self.processed_right, self.left_mask, self.right_mask = get_stereo_rectification(
                     self.left_image, self.right_image
                 )
                 self.processed_image = self.processed_left
 
             elif function_name == "边缘检测":
                 self.processed_left = get_canny_edge_detection(self.left_image)
+                if self.left_mask is not None:
+                    self.processed_left = cv2.bitwise_and(self.processed_left, self.left_mask)
                 if self.is_stereo:
                     self.processed_right = get_canny_edge_detection(self.right_image)
+                    if self.right_mask is not None:
+                        self.processed_right = cv2.bitwise_and(self.processed_right, self.right_mask)
                 self.processed_image = self.processed_left
 
             elif function_name == "曲线拟合":

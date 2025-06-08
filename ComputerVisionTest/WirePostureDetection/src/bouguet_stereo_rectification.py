@@ -36,7 +36,15 @@ def apply_stereo_rectification(img_left, img_right, R1, P1, R2, P2, camera_matri
     rectified_img_left = cv2.remap(img_left, map1_left, map2_left, cv2.INTER_LINEAR)
     rectified_img_right = cv2.remap(img_right, map1_right, map2_right, cv2.INTER_LINEAR)
 
-    return rectified_img_left, rectified_img_right
+    # 新增：生成有效区域掩码（白色为有效像素，黑色为填补区域）
+    mask = np.ones(img_left.shape[:2], dtype=np.uint8) * 255
+    valid_mask_left = cv2.remap(mask, map1_left, map2_left, cv2.INTER_NEAREST)
+    valid_mask_right = cv2.remap(mask, map1_right, map2_right, cv2.INTER_NEAREST)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    valid_mask_left = cv2.erode(valid_mask_left, kernel, iterations=1)
+    valid_mask_right = cv2.erode(valid_mask_right, kernel, iterations=1)
+
+    return rectified_img_left, rectified_img_right, valid_mask_left, valid_mask_right
 
 
 def get_valid_mask(img):
@@ -91,66 +99,17 @@ def get_stereo_rectification(left_image, right_image):
         return None, None
 
     image_size = (left_image.shape[1], left_image.shape[0])
-    processed_left, processed_right = apply_stereo_rectification(
+    processed_left, processed_right, valid_mask_left, valid_mask_right = apply_stereo_rectification(
         left_image, right_image, R1, P1, R2, P2, camera_matrix_left, dist_coeffs_left,
         camera_matrix_right, dist_coeffs_right, image_size
     )
-
-    # 获取左右图的掩码
-    mask_left = get_valid_mask(processed_left)
-    mask_right = get_valid_mask(processed_right)
-
-    # 计算共同有效区域
-    combined_mask = cv2.bitwise_and(mask_left, mask_right)
-
-    # 找到有效区域的边界
-    rows = np.any(combined_mask, axis=1)
-    cols = np.any(combined_mask, axis=0)
-
-    # 如果没有有效区域，返回原始图像
-    if not np.any(rows) or not np.any(cols):
-        print("Warning: No valid region found. Returning uncropped images.")
-        return processed_left, processed_right
-
-    # 计算有效区域的边界坐标
-    y_min, y_max = np.where(rows)[0][[0, -1]]
-    x_min, x_max = np.where(cols)[0][[0, -1]]
-
-    # 计算原始有效区域的尺寸
-    original_width = x_max - x_min
-    original_height = y_max - y_min
-
-    # 设置额外的裁切比例 (这里设为15%，可以根据需要调整)
-    crop_percentage = 0.08
-
-    # 计算额外的裁切量
-    extra_x = int(original_width * crop_percentage)
-    extra_y = int(original_height * crop_percentage)
-
-    # 应用额外的裁切 (确保不超出图像边界)
-    x_min = max(0, x_min + extra_x)
-    x_max = min(processed_left.shape[1], x_max - extra_x)
-    y_min = max(0, y_min + extra_y)
-    y_max = min(processed_left.shape[0], y_max - extra_y)
-
-    # 计算裁剪区域尺寸
-    w = x_max - x_min
-    h = y_max - y_min
-
-    # 执行裁剪
-    if w > 0 and h > 0:
-        processed_left = processed_left[y_min:y_max, x_min:x_max]
-        processed_right = processed_right[y_min:y_max, x_min:x_max]
-    else:
-        print("Warning: Crop region invalid. Returning uncropped images.")
-
     # 确保图像为三通道（如果是灰度图则转换）
     if len(processed_left.shape) == 2:
         processed_left = cv2.cvtColor(processed_left, cv2.COLOR_GRAY2BGR)
     if len(processed_right.shape) == 2:
         processed_right = cv2.cvtColor(processed_right, cv2.COLOR_GRAY2BGR)
 
-    return processed_left, processed_right
+    return processed_left, processed_right, valid_mask_left, valid_mask_right
 
 
 if __name__ == "__main__":
@@ -158,7 +117,7 @@ if __name__ == "__main__":
     img_left = cv2.imread('../output/left1_output_image_guided.png')
     img_right = cv2.imread('../output/right1_output_image_guided.png')
 
-    rectified_img_left, rectified_img_right = get_stereo_rectification(img_left, img_right)
+    rectified_img_left, rectified_img_right, valid_mask_left, valid_mask_right = get_stereo_rectification(img_left, img_right)
 
     # 显示校正后的图像
     cv2.imshow('Rectified Left Image', rectified_img_left)

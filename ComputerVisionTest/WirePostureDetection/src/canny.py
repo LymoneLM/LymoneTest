@@ -27,9 +27,10 @@ def canny_edge_detection(image_path, low_threshold, high_threshold):
 
     return edges
 
-def get_canny_edge_detection(input_img, low_threshold = 12, high_threshold = 150):
+def get_canny_edge_detection(input_img, low_threshold = 40, high_threshold = 90):
     opened_img = get_opening_operation(input_img)
     edges = cv2.Canny(opened_img, low_threshold, high_threshold)
+
     return edges
 
 
@@ -37,8 +38,8 @@ def get_canny_edge_detection(input_img, low_threshold = 12, high_threshold = 150
 if __name__ == "__main__":
     # 示例使用
     image_path = '../output/rectified_left1_image.png'
-    low_threshold = 12
-    high_threshold = 150
+    low_threshold = 40
+    high_threshold = 90
 
     # 进行边缘检测
     edges = canny_edge_detection(image_path, low_threshold, high_threshold)

@@ -115,7 +115,7 @@ def do_kernal(image):
     cv2.imshow("Final Result", result_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    cv2.imwrite("powerline_features_result.png", result_image)
+    cv2.imwrite("../output/powerline_features_result.png", result_image)
     print("结果已保存为 powerline_features_result.png")
 
     return np.array(feature_points)
@@ -127,5 +127,5 @@ if __name__ == "__main__":
     image_right = cv2.imread("../output/ui_output_right.png", cv2.IMREAD_GRAYSCALE)
 
     # (y,x)格式
-    np.save("left_feature_points.npy", do_kernal(image_left))
-    np.save("right_feature_points.npy", do_kernal(image_right))
+    np.save("../output/left_feature_points.npy", do_kernal(image_left))
+    np.save("../output/right_feature_points.npy", do_kernal(image_right))

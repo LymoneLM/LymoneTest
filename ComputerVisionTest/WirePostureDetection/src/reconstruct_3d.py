@@ -88,8 +88,8 @@ def save_to_csv(points, path="3d_points.csv"):
 
 if __name__ == "__main__":
     # 加载左右图的特征点（需先存为.npy或.txt）
-    left_points = load_feature_points("left_feature_points.npy")
-    right_points = load_feature_points("right_feature_points.npy")
+    left_points = load_feature_points("../output/left_feature_points.npy")
+    right_points = load_feature_points("../output/right_feature_points.npy")
 
     # 相机参数（单位：mm）
     f = 384.24

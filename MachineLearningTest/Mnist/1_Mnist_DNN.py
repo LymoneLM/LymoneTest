@@ -7,13 +7,27 @@ from sklearn.model_selection import train_test_split
 # Import Torch
 import torch
 import torch.nn as nn
-
 from torch import nn, optim
 
 import Model
 
+import argparse
+
+# 创建 ArgumentParser 对象
+parser = argparse.ArgumentParser(description='Mnist_DNN')
+
+# 添加参数
+parser.add_argument("-b", '--batch-size', type=int, help='Set batch size')
+parser.add_argument("-l", '--learning-rate', type=float, help='Set learning rate')
+parser.add_argument("-e", '--epochs', type=int, help='Set epochs')
+parser.add_argument("-n", '--no', type=int, help='figure name number')
+
+# 解析参数
+args = parser.parse_args()
+
 train = pd.read_csv("./data/MNIST_train.csv")
 test = pd.read_csv("./data/MNIST_test.csv")
+print("数据集样例：")
 print(train.head())
 y = train.label.values
 X = train.drop("label",axis=1).values
@@ -33,7 +47,10 @@ y_train_tensor = torch.from_numpy(y_train).type(torch.LongTensor) # data type is
 X_test_tensor = torch.from_numpy(X_test).type(torch.float)
 y_test_tensor = torch.from_numpy(y_test).type(torch.LongTensor) # data type is long
 # Set batch size
-batch_size = ?
+batch_size = 128
+if args.batch_size is not None:
+    batch_size = args.batch_size
+print("Batch size:", batch_size)
 
 # Pytorch train and test sets
 train = torch.utils.data.TensorDataset(X_train_tensor,y_train_tensor)
@@ -46,16 +63,23 @@ test_loader = torch.utils.data.DataLoader(test, batch_size = batch_size, shuffle
 model = Model.DNN()
 
 # 损失函数
-criterion = nn.CrossEntropyLoss(size_average=False)
+criterion = nn.CrossEntropyLoss(reduction='sum')
 
 # 学习率超参
-# learning_rate = 0.0015
-learning_rate = ?
-# 优化器
-# optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+learning_rate = 0.01
+if args.learning_rate is not None:
+    learning_rate = args.learning_rate
+print("learning rate:", learning_rate)
 
-epochs = ?
+# 优化器
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+# optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+
+epochs = 15
+if args.epochs is not None:
+    epochs = args.epochs
+print("epochs:", epochs)
+
 train_losses, test_losses = [], []
 n_train_samples = len(X_train_tensor)
 n_test_samples = len(X_test_tensor)
@@ -119,7 +143,11 @@ with torch.no_grad():
     print('Test Accuracy of the model on the 10000 test images: {} %'.format(100 * correct / total))
 
 # Save the model checkpoint
-torch.save(model.state_dict(), 'model.ckpt')
+output_path = "./output"
+no = 0
+if args.no is not None:
+    no = args.no
+torch.save(model.state_dict(), f'{output_path}/model_{no}.ckpt')
 plt.plot(train_losses, label='Training loss')
 plt.plot(test_losses, label='Validation loss')
 
@@ -127,4 +155,5 @@ plt.xlabel("epochs")
 plt.ylabel("loss")
 
 plt.legend(frameon=False)
-plt.show()
+plt.savefig(f'{output_path}/loss_{no}.png')
+# plt.show()

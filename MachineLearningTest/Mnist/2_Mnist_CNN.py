@@ -8,7 +8,7 @@ from torch import nn
 from Model import CNN
 import math
 # batch_size超参，根据硬件配置相应大小
-batch_size = ?
+batch_size = 128
 
 trans_img = transforms.Compose([
     transforms.ToTensor(),
@@ -53,12 +53,12 @@ warnings.filterwarnings("ignore", category=UserWarning)
 # model = CNN().cuda()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model = CNN().to(device)
-learning_rate = ?
+learning_rate = 0.001
 criterion = nn.CrossEntropyLoss(size_average=False)
 optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
 # 总的训练轮数
-epochs = ?
+epochs = 15
 train_losses = []
 test_losses = []
 for epoch in range(epochs):

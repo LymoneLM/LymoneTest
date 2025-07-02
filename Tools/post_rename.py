@@ -1,3 +1,4 @@
+# 给Hexo贴文文件重命名，头部附加YYYYMMDD日期
 import os
 import re
 import argparse

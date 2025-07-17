@@ -3,11 +3,10 @@ import time as systime
 import cv2
 from multiprocessing import Process, Queue
 
-# 导入自定义模块
+# 自定义模块
 import motor
 import temp_hum
-import time as mytime
-
+import time
 app = Flask(__name__)
 
 # 电机最大角度
@@ -79,10 +78,10 @@ HTML_TEMPLATE = '''
                 document.getElementById('motor1').innerText = data.motor1 + '°';
                 document.getElementById('motor2').innerText = data.motor2 + '°';
                 // 按钮禁用逻辑
-                document.getElementById('m1_dec').disabled = (data.motor1 <= 0);
-                document.getElementById('m1_inc').disabled = (data.motor1 >= 350);
-                document.getElementById('m2_dec').disabled = (data.motor2 <= 0);
-                document.getElementById('m2_inc').disabled = (data.motor2 >= 130);
+                document.getElementById('m1_dec').disabled = (data.motor1 <= -175);
+                document.getElementById('m1_inc').disabled = (data.motor1 >= 175);
+                document.getElementById('m2_dec').disabled = (data.motor2 <= -65);
+                document.getElementById('m2_inc').disabled = (data.motor2 >= 65);
             });
         }
         setInterval(updateData, 1000);
@@ -118,7 +117,7 @@ HTML_TEMPLATE = '''
                 <span class="angle" id="motor1">--°</span>
                 <button id="m1_inc" onclick="moveMotor(1, 1)">+</button>
             </div>
-            <span class="label">范围：0°~350°</span>
+            <span class="label">范围：-175°~175°</span>
         </div>
         <div class="motor-control">
             <span class="label">电机二：</span>
@@ -127,7 +126,7 @@ HTML_TEMPLATE = '''
                 <span class="angle" id="motor2">--°</span>
                 <button id="m2_inc" onclick="moveMotor(2, 1)">+</button>
             </div>
-            <span class="label">范围：0°~130°</span>
+            <span class="label">范围：-65°~65°</span>
         </div>
         {% if error %}<div class="error">{{ error }}</div>{% endif %}
         {% if success %}<div class="success">{{ success }}</div>{% endif %}
@@ -139,7 +138,7 @@ HTML_TEMPLATE = '''
 @app.route('/status')
 def status():
     try:
-        h, m, s = mytime.get_time()
+        h, m, s = time.get_time()
     except Exception:
         t = systime.localtime()
         h, m, s = t.tm_hour, t.tm_min, t.tm_sec

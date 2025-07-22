@@ -1,6 +1,6 @@
 import cv2
 import mediapipe as mp
-import motor
+import utils.motor as motor
 import time
 import numpy as np
 from flask import Flask, render_template_string, jsonify, Response

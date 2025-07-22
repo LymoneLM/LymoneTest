@@ -4,9 +4,9 @@ import cv2
 from multiprocessing import Process, Queue
 
 # 自定义模块
-import motor
-import temp_hum
-import time
+import utils.motor as motor
+import utils.temp_hum as temp_hum
+import utils.time as time
 app = Flask(__name__)
 
 # 电机最大角度

@@ -4,7 +4,7 @@ import onnxruntime
 from flask import Flask, render_template_string, Response, jsonify
 from multiprocessing import Process, Queue, Value
 import time
-import motor  # 引入电机控制模块
+import utils.motor as motor  # 引入电机控制模块
 
 # --- 全局配置 ---
 # Flask应用

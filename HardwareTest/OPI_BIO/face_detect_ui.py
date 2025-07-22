@@ -3,7 +3,7 @@ import cv2
 from multiprocessing import Process, Queue, Value
 import time as systime
 import numpy as np
-import motor
+import utils.motor as motor
 from face_detect_rec import FaceDetectRec, faceDetecImgDis
 
 app = Flask(__name__)

@@ -1,7 +1,7 @@
 from flask import Flask, render_template_string, jsonify, Response
 import cv2
 import mediapipe as mp
-import motor
+import utils.motor as motor
 import time
 from multiprocessing import Process, Queue, Value
 from ctypes import c_char_p, c_bool

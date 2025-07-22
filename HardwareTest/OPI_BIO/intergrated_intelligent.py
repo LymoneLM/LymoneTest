@@ -8,6 +8,7 @@ from ctypes import c_char_p, c_bool
 import utils.motor as motor
 import utils.temp_hum as temp_hum
 import utils.time as time_utils
+import utils.speaker as speaker
 from face_detect_rec import FaceDetectRec, faceDetecImgDis
 
 # ----------------- 配置参数 -----------------
@@ -37,6 +38,7 @@ last_motor_activity = Value('d', time.time())
 motor_sleep_status = Value(c_bool, False)
 # 移除palm_open_detected和palm_open_time
 last_face_toggle_time = Value('d', 0.0)  # 新增：记录上次切换人脸追踪的时间
+volume_value = Value('d', 0.2)  # 全局音量（0.0~1.0）
 
 # ----------------- 摄像头进程 -----------------
 def camera_process(frame_lock, frame_buffer, frame_dims):
@@ -106,6 +108,11 @@ def recognition_process(frame_lock, frame_buffer, frame_dims, landmarks_lock, la
                 if gesture == "open" and now - last_face_toggle_time.value > 2.0:
                     enable_face_tracking.value = not enable_face_tracking.value
                     last_face_toggle_time.value = now
+                    # 播放音效
+                    if enable_face_tracking.value:
+                        speaker.play_wav_file_async('assets/open.wav', volume_value.value)
+                    else:
+                        speaker.play_wav_file_async('assets/close.wav', volume_value.value)
                 # 只有握拳时才允许方向识别
                 if gesture == "closed":
                     thumb_tip = points[mp_hands.HandLandmark.THUMB_TIP.value]
@@ -356,6 +363,8 @@ HTML_TEMPLATE = '''
                     document.getElementById('hand_control').checked = data.hand_control;
                     document.getElementById('show_hand').checked = data.show_hand;
                     document.getElementById('show_face').checked = data.show_face;
+                    document.getElementById('volume_slider').value = Math.round(data.volume * 100);
+                    document.getElementById('volume_value').innerText = Math.round(data.volume * 100);
 
                     // 更新按钮状态
                     document.getElementById('m1_left').disabled = (data.motor1 <= -175);
@@ -383,6 +392,15 @@ HTML_TEMPLATE = '''
             })
             .then(r => r.json())
             .then(updateStatus);
+        }
+
+        function setVolume(val) {
+            fetch('/set_volume', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({volume: val/100})
+            }).then(r => r.json()).then(updateStatus);
+            document.getElementById('volume_value').innerText = val;
         }
 
         window.onload = function() {
@@ -434,6 +452,15 @@ HTML_TEMPLATE = '''
                         <input type="checkbox" id="show_face" onchange="toggleControl('show_face')">
                         <span class="slider"></span>
                     </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>音量调节</h3>
+                <div class="switch-container">
+                    <span class="switch-label">音量</span>
+                    <input type="range" id="volume_slider" min="0" max="100" value="100" style="flex:2" oninput="setVolume(this.value)">
+                    <span id="volume_value">100</span>
                 </div>
             </div>
 
@@ -550,7 +577,8 @@ def status():
         'face_tracking': enable_face_tracking.value,
         'hand_control': enable_hand_control.value,
         'show_hand': show_hand_overlay.value,
-        'show_face': show_face_overlay.value
+        'show_face': show_face_overlay.value,
+        'volume': volume_value.value
     })
 
 @app.route('/toggle_control', methods=['POST'])
@@ -590,6 +618,14 @@ def move():
             return jsonify({'success': True})
         return jsonify({'success': False, 'error': '电机二已达极限'})
     return jsonify({'success': False, 'error': '参数错误'})
+
+@app.route('/set_volume', methods=['POST'])
+def set_volume():
+    data = request.get_json()
+    v = float(data.get('volume', 1.0))
+    v = min(max(v, 0.0), 1.0)
+    volume_value.value = v
+    return jsonify({'success': True, 'volume': v})
 
 if __name__ == '__main__':
     p_camera = Process(target=camera_process, args=(frame_lock, frame_buffer, frame_dims))

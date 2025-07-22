@@ -31,6 +31,15 @@ def rotate(motor_pins, angle):
             wiringpi.digitalWrite(_pin, value)
         time.sleep(0.001)
 
+# 新增：电机休眠与唤醒函数
+
+def sleep_motor():
+    """
+    关闭所有电机引脚，进入低功耗状态
+    """
+    for pin in pins:
+        wiringpi.digitalWrite(pin, 0)
+
 # 主函数， 控制步进电机
 def main():
     # 主循环， 使电机旋转

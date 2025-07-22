@@ -211,28 +211,47 @@ HTML_TEMPLATE = '''
     <style>
         body { font-family: 'Microsoft YaHei', Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }
         .container { 
-            max-width: 1200px; 
+            max-width: 1400px; 
             margin: auto; 
             display: grid;
-            grid-template-columns: 1fr 300px;
+            grid-template-columns: 250px 1fr 300px;
             gap: 20px;
+            align-items: stretch;
+            height: 80vh;
+        }
+        .panel {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #ccc;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .left-panel, .right-panel {
+            height: 100%;
         }
         .main-content {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px #ccc;
-            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
-        .side-panel {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px #ccc;
-            padding: 20px;
-            height: fit-content;
+        .cam-box {
+            margin-bottom: 20px;
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        h2 { color: #333; margin-bottom: 20px; }
-        .cam-box { margin-bottom: 20px; }
-        .cam-box img { width: 100%; border-radius: 6px; }
+        .cam-box img {
+            width: 100%;
+            height: auto;
+            max-height: 100%;
+            border-radius: 6px;
+            object-fit: contain;
+        }
 
         .control-group {
             background: #f8f9fa;
@@ -411,14 +430,7 @@ HTML_TEMPLATE = '''
 </head>
 <body>
     <div class="container">
-        <div class="main-content">
-            <h2>智能摄像头控制系统</h2>
-            <div class="cam-box">
-                <img id="cam" src="/video_feed" alt="摄像头画面">
-            </div>
-        </div>
-
-        <div class="side-panel">
+        <div class="panel left-panel">
             <div class="control-group">
                 <h3>功能控制</h3>
                 <div class="switch-container">
@@ -463,7 +475,16 @@ HTML_TEMPLATE = '''
                     <span id="volume_value">100</span>
                 </div>
             </div>
+        </div>
 
+        <div class="panel main-content">
+            <h2>智能摄像头控制系统</h2>
+            <div class="cam-box">
+                <img id="cam" src="/video_feed" alt="摄像头画面">
+            </div>
+        </div>
+
+        <div class="panel right-panel">
             <div class="control-group">
                 <h3>手动控制</h3>
                 <div class="direction-pad">

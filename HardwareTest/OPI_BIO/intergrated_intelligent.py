@@ -103,7 +103,7 @@ def recognition_process(frame_lock, frame_buffer, frame_dims, landmarks_lock, la
                     gesture = "closed"
                 # 张开手掌切换人脸追踪（带冷却时间）
                 now = time.time()
-                if gesture == "open" and now - last_face_toggle_time.value > 0.8:
+                if gesture == "open" and now - last_face_toggle_time.value > 2.0:
                     enable_face_tracking.value = not enable_face_tracking.value
                     last_face_toggle_time.value = now
                 # 只有握拳时才允许方向识别

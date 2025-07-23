@@ -28,17 +28,16 @@ frame_dims = RawArray('i', [0, 0, 0])  # [H, W, C]
 frame_buffer = RawArray('B', CAM_HEIGHT * CAM_WIDTH * 3)
 landmarks_buffer = RawArray('d', 21 * 3)
 shared_direction = Value(c_char_p, b"center")
-show_hand_overlay = Value(c_bool, True)
-show_face_overlay = Value(c_bool, True)
+show_hand_overlay = Value(c_bool, False)
+show_face_overlay = Value(c_bool, False)
 enable_face_tracking = Value(c_bool, False)
 enable_hand_control = Value(c_bool, True)
 motor1_angle = Value('i', 0)
 motor2_angle = Value('i', 0)
 last_motor_activity = Value('d', time.time())
 motor_sleep_status = Value(c_bool, False)
-# 移除palm_open_detected和palm_open_time
 last_face_toggle_time = Value('d', 0.0)  # 新增：记录上次切换人脸追踪的时间
-volume_value = Value('d', 0.2)  # 全局音量（0.0~1.0）
+volume_value = Value('d', 0.05)  # 全局音量（0.0~1.0）
 
 # ----------------- 摄像头进程 -----------------
 def camera_process(frame_lock, frame_buffer, frame_dims):
@@ -155,7 +154,7 @@ def recognition_process(frame_lock, frame_buffer, frame_dims, landmarks_lock, la
                         motor.rotate(motor.motor1, MOTOR_STEP)
                         motor1_angle.value += MOTOR_STEP
         # 人脸跟踪每15帧
-        if do_face and frame_count % 15 == 0:
+        if do_face and frame_count % 5 == 0:
             predictions = face_detector.inference(frame)
             if predictions and predictions[0] is not None and len(predictions[0]) > 0:
                 bbox = predictions[0][0]

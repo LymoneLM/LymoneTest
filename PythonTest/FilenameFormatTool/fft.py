@@ -330,7 +330,7 @@ def reverse_operations(log_file: str, output_dir: str, dry_run: bool, preserve_a
 def setup_logger():
     log_dir = os.getcwd()
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = os.path.join(log_dir, f"rename_{timestamp}.log")
+    log_file = os.path.join(log_dir, ".log", f"rename_{timestamp}.log")
 
     logger = logging.getLogger("file_renamer")
     logger.setLevel(logging.INFO)

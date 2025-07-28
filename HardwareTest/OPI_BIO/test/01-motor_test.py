@@ -44,7 +44,7 @@ class StepperMotorController:
             step = seq[i % 8]
             for pin, value in zip(motor_pins, step):
                 wiringpi.digitalWrite(pin, value)
-            time.sleep(0.0007)
+            time.sleep(0.001)
 
     # 电机角度初始化
     def set_cloud_platform_degree(self, btm=170, top=60):

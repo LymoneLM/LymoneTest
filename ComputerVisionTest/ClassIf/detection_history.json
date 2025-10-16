@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "result": "health",
+    "confidence": 0.9999943971633911,
+    "timestamp": "2025-05-07 20:45:30",
+    "type": "image",
+    "image_path": "history_images\\detection_1_health_90_Crop_8b16fa2f.jpg"
+  },
+  {
+    "id": 2,
+    "result": "health",
+    "confidence": 0.9999991655349731,
+    "timestamp": "2025-05-07 20:47:30",
+    "type": "image",
+    "image_path": "history_images\\detection_2_health_94_Rot_4b8f5222.jpg"
+  },
+  {
+    "id": 3,
+    "result": "swine_fever",
+    "confidence": 0.9978744983673096,
+    "timestamp": "2025-05-07 20:52:39",
+    "type": "image",
+    "image_path": "history_images\\detection_3_swine_fever_93_Flip1_c9432d64.jpg"
+  },
+  {
+    "id": 4,
+    "result": "health",
+    "confidence": 0.9999943971633911,
+    "timestamp": "2025-05-07 21:09:52",
+    "type": "image",
+    "image_path": "history_images\\detection_4_health_90_Crop_8b16fa2f.jpg"
+  },
+  {
+    "id": 5,
+    "result": "swine_fever",
+    "confidence": 0.9999829530715942,
+    "timestamp": "2025-05-07 21:55:52",
+    "type": "image",
+    "image_path": "history_images\\detection_5_swine_fever_7_GauN_0543205e.jpg"
+  },
+  {
+    "id": 6,
+    "result": "health",
+    "confidence": 0.99991774559021,
+    "timestamp": "2025-05-16 15:27:42",
+    "type": "image",
+    "image_path": "history_images\\detection_6_detection_1_health_90_Crop_8b16fa2f.jpg"
+  }
+]

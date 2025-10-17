@@ -19,7 +19,7 @@ inline void ola() {
 }
 int main() {
     ola();
-    std::ofstream code("PrimerPrime.cpp", std::ios::out | std::ios::trunc);
+    std::ofstream code("CPrimerPrime.cpp", std::ios::out | std::ios::trunc);
     long long N;
     std::cout << "Please type in the N, I will find the prime from 0 to N\n";
     std::cin >> N;
@@ -29,9 +29,10 @@ int main() {
          << "    long long N;\n    cin >> N;\n";
     long long i = -1;
     while (++i != N)
-        code << "    if ( N == " << i << " ){\n        cout << " << i << " << \" is " << ((ola_ispri[i]) ? "" : "not ") << "a prime\";\n        return 0;\n    }\n";
+        code << "    if ( N == " << i << " ){\n        cout << " << i << " << \" is " 
+        << ((ola_ispri[i]) ? "" : "not ") << "a prime\";\n        return 0;\n    }\n";
     code << "    return 0;\n}";
-    std::cout << "The CPP code have been placed in your floder, it was named PrimerPrime.cpp\n"
-              << "thanks for you use!\n";
+    std::cout << "The CPP code have been placed in your floder, it was named CPrimerPrime.cpp\n"
+              << "thanks for your use!\n";
     return 0;
 }

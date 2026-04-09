@@ -182,6 +182,113 @@ def adf_stat(series, max_lag=12):
     return t, pv
 
 
+
+def make_descriptive_stats_table(df, save_path):
+    save_path = Path(save_path)
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+
+    cols_map = {
+        "现货收益率 Rs": "rs",
+        "期货收益率 Rf": "rf",
+        "未预期成交量 UV": "uv",
+        "未预期持仓量 UH": "uh",
+        "CPI": "cpi",
+        "LPR": "lpr",
+        "GDP同比": "gdp_yoy",
+    }
+
+    rows = []
+    for label, col in cols_map.items():
+        s = pd.to_numeric(df[col], errors="coerce").dropna()
+        rows.append([
+            label,
+            int(s.shape[0]),
+            round(s.mean(), 4),
+            round(s.std(), 4),
+            round(s.min(), 4),
+            round(s.quantile(0.25), 4),
+            round(s.median(), 4),
+            round(s.quantile(0.75), 4),
+            round(s.max(), 4),
+            round(stats.skew(s), 4),
+            round(stats.kurtosis(s), 4),
+        ])
+
+    stat_df = pd.DataFrame(
+        rows,
+        columns=["变量", "N", "均值", "标准差", "最小值", "25%", "中位数", "75%", "最大值", "偏度", "峰度"]
+    )
+
+    market_cnt = df["market"].value_counts()
+    market_info = pd.DataFrame({
+        "市场状态": ["牛市", "熊市", "震荡市"],
+        "样本量": [
+            int(market_cnt.get("牛市", 0)),
+            int(market_cnt.get("熊市", 0)),
+            int(market_cnt.get("震荡市", 0)),
+        ]
+    })
+
+    fig = plt.figure(figsize=(16, 8))
+    ax1 = fig.add_subplot(211)
+    ax1.axis("off")
+    tbl1 = ax1.table(
+        cellText=stat_df.values,
+        colLabels=stat_df.columns,
+        loc="center",
+        cellLoc="center",
+        colLoc="center",
+    )
+    tbl1.auto_set_font_size(False)
+    tbl1.set_fontsize(10)
+    tbl1.scale(1, 1.5)
+
+    for (r, c), cell in tbl1.get_celld().items():
+        cell.set_linewidth(0.6)
+        if r == 0:
+            cell.set_text_props(weight="bold")
+            cell.set_facecolor("#D9EAF7")
+        elif r % 2 == 1:
+            cell.set_facecolor("#F7FBFF")
+
+    ax1.set_title("样本数据描述性统计表", fontsize=16, fontweight="bold", pad=12)
+
+    ax2 = fig.add_subplot(212)
+    ax2.axis("off")
+    tbl2 = ax2.table(
+        cellText=market_info.values,
+        colLabels=market_info.columns,
+        loc="center",
+        cellLoc="center",
+        colLoc="center",
+        colWidths=[0.25, 0.18]
+    )
+    tbl2.auto_set_font_size(False)
+    tbl2.set_fontsize(11)
+    tbl2.scale(1, 1.6)
+
+    for (r, c), cell in tbl2.get_celld().items():
+        cell.set_linewidth(0.6)
+        if r == 0:
+            cell.set_text_props(weight="bold")
+            cell.set_facecolor("#E8F5E9")
+        elif r % 2 == 1:
+            cell.set_facecolor("#F9FBE7")
+
+    sample_start = df["date"].min().date()
+    sample_end = df["date"].max().date()
+    ax2.set_title(f"样本区间：{sample_start} 至 {sample_end}", fontsize=12, pad=8)
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=200, bbox_inches="tight")
+    plt.close()
+
+    print(f"\n描述性统计表图片 -> {save_path}")
+    print("\n【描述性统计表】")
+    print(stat_df.to_string(index=False))
+    print("\n【市场状态样本量】")
+    print(market_info.to_string(index=False))
+
 def run_adf_tests(df):
     print("\n" + "=" * 62)
     print("【基础检验 1】ADF 单位根检验（含截距，BIC 选滞后）")
@@ -551,6 +658,8 @@ def main():
 
     df_raw = fetch_real_data()
     df = preprocess(df_raw)
+    stats_path = get_output_path("descriptive_stats_table.png")
+    make_descriptive_stats_table(df, stats_path)
     run_adf_tests(df)
     p = select_var_lag(df, maxlags=8)
 
@@ -571,6 +680,7 @@ def main():
     print(f"H3（市场异质影响）：{'方向支持' if h3 else '暂不支持或样本不足'}")
 
     print(f"\n输出图表: {out_path}")
+    print(f"描述性统计表: {stats_path}")
 
 
 if __name__ == "__main__":

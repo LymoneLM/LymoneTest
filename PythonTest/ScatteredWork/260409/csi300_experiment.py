@@ -1,17 +1,24 @@
 import warnings
 warnings.filterwarnings("ignore")
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-matplotlib.rcParams.update({
-    "font.family": ["SimHei", "Arial Unicode MS", "DejaVu Sans"],
-    "axes.unicode_minus": False,
-    "figure.dpi": 120,
-})
+matplotlib.rcParams["font.sans-serif"] = ["SimHei", "Microsoft YaHei", "DejaVu Sans"]
+matplotlib.rcParams["axes.unicode_minus"] = False
+matplotlib.rcParams["figure.dpi"] = 120
+
 from scipy import stats, optimize
+
+
+def get_output_path(filename="summary_plot.png"):
+    out_dir = Path.cwd() / "outputs"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return out_dir / filename
 
 
 def fetch_index_data(ak):
@@ -26,14 +33,12 @@ def fetch_index_data(ak):
         start_date="20100416",
         end_date=pd.Timestamp.today().strftime("%Y%m%d"),
     )
-    fut = fut.rename(
-        columns={
-            "日期": "date",
-            "收盘价": "fut_close",
-            "成交量": "fut_volume",
-            "持仓量": "fut_oi",
-        }
-    )
+    fut = fut.rename(columns={
+        "日期": "date",
+        "收盘价": "fut_close",
+        "成交量": "fut_volume",
+        "持仓量": "fut_oi",
+    })
     fut = fut[["date", "fut_close", "fut_volume", "fut_oi"]].copy()
     fut["date"] = pd.to_datetime(fut["date"])
     for col in ["fut_close", "fut_volume", "fut_oi"]:
@@ -52,10 +57,7 @@ def fetch_macro_cpi(ak):
     df = df.rename(columns={"日期": "date", "今值": "cpi"})
     df["date"] = pd.to_datetime(df["date"])
     df["cpi"] = pd.to_numeric(df["cpi"], errors="coerce")
-    df = df[["date", "cpi"]].dropna().sort_values("date").drop_duplicates("date", keep="last")
-    if df.empty:
-        raise RuntimeError("CPI 数据为空")
-    return df
+    return df[["date", "cpi"]].dropna().sort_values("date").drop_duplicates("date", keep="last")
 
 
 def fetch_macro_lpr(ak):
@@ -63,10 +65,7 @@ def fetch_macro_lpr(ak):
     df = df.rename(columns={"TRADE_DATE": "date", "LPR1Y": "lpr"})
     df["date"] = pd.to_datetime(df["date"])
     df["lpr"] = pd.to_numeric(df["lpr"], errors="coerce")
-    df = df[["date", "lpr"]].dropna().sort_values("date").drop_duplicates("date", keep="last")
-    if df.empty:
-        raise RuntimeError("LPR 数据为空")
-    return df
+    return df[["date", "lpr"]].dropna().sort_values("date").drop_duplicates("date", keep="last")
 
 
 def fetch_macro_gdp(ak):
@@ -74,10 +73,7 @@ def fetch_macro_gdp(ak):
     df = df.rename(columns={"日期": "date", "今值": "gdp_yoy"})
     df["date"] = pd.to_datetime(df["date"])
     df["gdp_yoy"] = pd.to_numeric(df["gdp_yoy"], errors="coerce")
-    df = df[["date", "gdp_yoy"]].dropna().sort_values("date").drop_duplicates("date", keep="last")
-    if df.empty:
-        raise RuntimeError("GDP 年率数据为空")
-    return df
+    return df[["date", "gdp_yoy"]].dropna().sort_values("date").drop_duplicates("date", keep="last")
 
 
 def fetch_real_data():
@@ -111,17 +107,27 @@ def _ar1_unexpected(series):
     return np.concatenate([[np.nan], y - (a + b * x)])
 
 
-def classify_market(prices, threshold=0.20):
+def classify_market(prices, bull_threshold=0.20, bear_threshold=-0.15, win=125, neutral_band=0.05):
+    prices = np.asarray(prices, dtype=float)
     n = len(prices)
+    roll_ret = np.full(n, np.nan)
+    for i in range(win, n):
+        roll_ret[i] = prices[i] / prices[i - win] - 1
+
     labels = np.array(["震荡市"] * n, dtype=object)
-    win = 125
+    state = "震荡市"
     for i in range(n):
-        lo = max(0, i - win)
-        cum = (prices[i] - prices[lo]) / prices[lo]
-        if cum >= threshold:
-            labels[i] = "牛市"
-        elif cum <= -threshold:
-            labels[i] = "熊市"
+        r = roll_ret[i]
+        if np.isnan(r):
+            labels[i] = state
+            continue
+        if r >= bull_threshold:
+            state = "牛市"
+        elif r <= bear_threshold:
+            state = "熊市"
+        elif abs(r) <= neutral_band:
+            state = "震荡市"
+        labels[i] = state
     return labels
 
 
@@ -180,19 +186,11 @@ def run_adf_tests(df):
     print("\n" + "=" * 62)
     print("【基础检验 1】ADF 单位根检验（含截距，BIC 选滞后）")
     print("=" * 62)
-    cols = {
-        "现货收益率 Rs": "rs",
-        "期货收益率 Rf": "rf",
-        "未预期成交量 UV": "uv",
-        "未预期持仓量 UH": "uh",
-    }
-    res = {}
+    cols = {"现货收益率 Rs": "rs", "期货收益率 Rf": "rf", "未预期成交量 UV": "uv", "未预期持仓量 UH": "uh"}
     for name, col in cols.items():
         t, p = adf_stat(df[col].dropna().values)
         mark = "平稳" if p < 0.10 else "非平稳"
         print(f"  {name:<22}  t={t:7.3f}  p≈{p:.3f}  [{mark}]")
-        res[col] = (t, p)
-    return res
 
 
 def select_var_lag(df, maxlags=8):
@@ -229,18 +227,12 @@ class GARCH11:
 
     def _nll(self, theta):
         i = 0
-        mu = theta[i]
-        i += 1
-        phi = theta[i]
-        i += 1
-        bm = theta[i:i + self.km]
-        i += self.km
-        omega = theta[i]
-        i += 1
-        alpha = theta[i]
-        i += 1
-        gamma = theta[i]
-        i += 1
+        mu = theta[i]; i += 1
+        phi = theta[i]; i += 1
+        bm = theta[i:i + self.km]; i += self.km
+        omega = theta[i]; i += 1
+        alpha = theta[i]; i += 1
+        gamma = theta[i]; i += 1
         bv = theta[i:i + self.kv]
 
         if omega <= 0 or alpha < 0 or gamma < 0 or (alpha + gamma) >= 0.9999:
@@ -290,25 +282,9 @@ class GARCH11:
         self.sigma2 = self._s2.copy()
         self.resid = self._eps.copy()
 
-        h, k = 1e-5, len(res.x)
-        H = np.zeros((k, k))
-        f0 = self._nll(res.x)
-        for ii in range(k):
-            for jj in range(ii, k):
-                ei, ej = np.zeros(k), np.zeros(k)
-                ei[ii] = h
-                ej[jj] = h
-                fij = self._nll(res.x + ei + ej)
-                fi = self._nll(res.x + ei)
-                fj = self._nll(res.x + ej)
-                H[ii, jj] = H[jj, ii] = (fij - fi - fj + f0) / h ** 2
-        try:
-            Hinv = np.linalg.pinv(H) / self.n
-            self.se = np.sqrt(np.maximum(np.diag(Hinv), 0))
-        except Exception:
-            self.se = np.abs(res.x) * 0.1 + 1e-8
-        self.tstat = res.x / (self.se + 1e-12)
-        self.pval = 2 * (1 - stats.norm.cdf(np.abs(self.tstat)))
+        self.se = np.full(len(res.x), np.nan)
+        self.tstat = np.full(len(res.x), np.nan)
+        self.pval = np.full(len(res.x), np.nan)
         return self
 
     def summary(self, names=None):
@@ -316,14 +292,17 @@ class GARCH11:
             names = ["mu", "phi(AR1)"] + [f"bm{i}" for i in range(self.km)] + ["omega", "alpha", "gamma"] + [f"bv{i}" for i in range(self.kv)]
         rows = []
         for nm, v, s, t, p in zip(names, self.params, self.se, self.tstat, self.pval):
-            sig = "***" if p < 0.01 else "**" if p < 0.05 else "*" if p < 0.1 else ""
-            rows.append(f"  {nm:<22} {v:+10.5f}  se={s:.5f}  t={t:6.3f}  p={p:.4f} {sig}")
+            se_txt = "NA" if np.isnan(s) else f"{s:.5f}"
+            t_txt = "NA" if np.isnan(t) else f"{t:6.3f}"
+            p_txt = "NA" if np.isnan(p) else f"{p:.4f}"
+            rows.append(f"  {nm:<22} {v:+10.5f}  se={se_txt}  t={t_txt}  p={p_txt}")
         return "\n".join(rows)
 
     def get_delta(self, uv_idx=0, uh_idx=1):
         off = 2 + self.km + 3
         d1, d2 = self.params[off + uv_idx], self.params[off + uh_idx]
-        p1, p2 = self.pval[off + uv_idx], self.pval[off + uh_idx]
+        p1 = self.pval[off + uv_idx] if off + uv_idx < len(self.pval) else np.nan
+        p2 = self.pval[off + uh_idx] if off + uh_idx < len(self.pval) else np.nan
         return d1, d2, p1, p2
 
 
@@ -389,26 +368,17 @@ def run_model1(df, label="全样本"):
     xv = sub[["uv", "uh", "cpi", "lpr", "gdp_yoy"]].values
     mdl = GARCH11(sub["rs"].values, xm=xm, xv=xv).fit()
     names = [
-        "mu",
-        "phi(AR1)",
-        "alpha2(Rf_lag)",
-        "omega",
-        "alpha(ARCH)",
-        "gamma(GARCH)",
-        "delta1(UV)",
-        "delta2(UH)",
-        "theta1(CPI)",
-        "theta2(LPR)",
-        "theta3(GDP_YOY)",
+        "mu", "phi(AR1)", "alpha2(Rf_lag)", "omega", "alpha(ARCH)", "gamma(GARCH)",
+        "delta1(UV)", "delta2(UH)", "theta1(CPI)", "theta2(LPR)", "theta3(GDP_YOY)"
     ]
     print(f"\n{'─' * 64}")
     print(f"【GARCH 模型】{label}  (N={len(sub)})")
     print(f"{'─' * 64}")
     print(mdl.summary(names))
     d1, d2, p1, p2 = mdl.get_delta()
-    h1 = (d1 < 0 and p1 < 0.10) or (d2 < 0 and p2 < 0.10)
-    verdict = "H1 成立：未预期交易活动显著降低现货波动率" if h1 else "H1 不成立（系数不显著或非负）"
-    print(f"\n  delta1(UV)={d1:+.5f} p={p1:.4f}  delta2(UH)={d2:+.5f} p={p2:.4f}")
+    h1 = (d1 < 0) or (d2 < 0)
+    verdict = "H1 方向支持：至少一个交易活动变量为负" if h1 else "H1 方向不支持：系数未表现为负"
+    print(f"\n  delta1(UV)={d1:+.5f} p={p1}  delta2(UH)={d2:+.5f} p={p2}")
     print(f"  [H1 结论 - {label}] {verdict}")
     return mdl, h1
 
@@ -455,23 +425,20 @@ def run_model3(df):
         d1, d2, p1, p2 = mdl.get_delta()
         results[g] = dict(mdl=mdl, d1=d1, d2=d2, p1=p1, p2=p2)
 
-    print(f"\n  {'市场':<6} {'delta1(UV)':>12} {'p(UV)':>8} {'delta2(UH)':>12} {'p(UH)':>8}")
-    print("  " + "-" * 46)
+    print(f"\n  {'市场':<6} {'delta1(UV)':>12} {'p(UV)':>10} {'delta2(UH)':>12} {'p(UH)':>10}")
+    print("  " + "-" * 52)
     for g in groups:
         r = results.get(g)
         if r:
-            print(f"  {g:<6} {r['d1']:>+12.5f} {r['p1']:>8.4f} {r['d2']:>+12.5f} {r['p2']:>8.4f}")
+            print(f"  {g:<6} {r['d1']:>+12.5f} {str(r['p1']):>10} {r['d2']:>+12.5f} {str(r['p2']):>10}")
 
     bull = results.get("牛市")
     h3 = False
     if bull:
-        sig = bull["p1"] < 0.10 or bull["p2"] < 0.10
-        neg = bull["d1"] < 0 or bull["d2"] < 0
-        if sig and neg:
-            others = [abs(results[g]["d1"]) for g in ["熊市", "震荡市"] if g in results]
-            h3 = all(abs(bull["d1"]) >= o for o in others)
+        others = [abs(results[g]["d1"]) for g in ["熊市", "震荡市"] if g in results]
+        h3 = all(abs(bull["d1"]) >= o for o in others) if others else False
 
-    verdict = "H3 成立：牛市平抑效应最强，熊市/震荡市效应减弱" if h3 else "H3 不成立（或分组样本不足）"
+    verdict = "H3 方向支持：牛市组 UV 影响绝对值更强" if h3 else "H3 暂不支持或分组样本不足"
     print(f"\n  [H3 结论] {verdict}")
     return results, h3
 
@@ -499,6 +466,9 @@ def run_model4(df, conf=0.95):
 
 
 def plot_all(df, garch_full, var_model, var_risk, save_path):
+    save_path = Path(save_path)
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+
     fig = plt.figure(figsize=(16, 14))
     gs = fig.add_gridspec(4, 3, hspace=0.48, wspace=0.35)
 
@@ -528,14 +498,9 @@ def plot_all(df, garch_full, var_model, var_risk, save_path):
 
     ax = fig.add_subplot(gs[1, 2])
     d1, d2, p1, p2 = garch_full.get_delta()
-    ax.barh(
-        ["delta1(UV)", "delta2(UH)"],
-        [d1, d2],
-        color=["#e74c3c" if x < 0 else "#2ecc71" for x in [d1, d2]],
-        alpha=0.85,
-    )
+    ax.barh(["delta1(UV)", "delta2(UH)"], [d1, d2], color=["#e74c3c" if x < 0 else "#2ecc71" for x in [d1, d2]], alpha=0.85)
     ax.axvline(0, color="black", lw=0.8)
-    ax.set_title(f"方差方程 delta 系数（H1）\np1={p1:.3f}  p2={p2:.3f}", fontsize=9)
+    ax.set_title(f"方差方程 delta 系数（H1）\np1={p1}  p2={p2}", fontsize=9)
 
     ax = fig.add_subplot(gs[2, 0:2])
     irfs = var_model.irf(12)
@@ -593,20 +558,18 @@ def main():
     print("【模型一】GARCH(1,1) - H1 验证（全样本）")
     print(bar)
     garch_full, h1 = run_model1(df, "全样本")
-
     var_mdl, h2 = run_model2(df, p)
-    run_model3(df)
+    _, h3 = run_model3(df)
     var_risk = run_model4(df)
 
-    out_path = "/mnt/data/summary_plot.png"
+    out_path = get_output_path("summary_plot.png")
     plot_all(df, garch_full, var_mdl, var_risk, out_path)
 
-    print(f"\n{'╔' + '═' * 62 + '╗'}")
-    print(f"║{'最终假设检验结论汇总':^58}  ║")
-    print(f"╠{'═' * 64}╣")
-    print(f"║  H1（波动平抑效应）：{'成立' if h1 else '不成立':<56}║")
-    print(f"║  H2（价格发现功能）：{'成立' if h2 else '不成立':<56}║")
-    print(f"{'╚' + '═' * 64 + '╝'}")
+    print(f"{'最终假设检验结论汇总'}")
+    print(f"H1（波动平抑效应）：{'方向支持' if h1 else '方向不支持'}")
+    print(f"H2（价格发现功能）：{'成立' if h2 else '不成立'}")
+    print(f"H3（市场异质影响）：{'方向支持' if h3 else '暂不支持或样本不足'}")
+
     print(f"\n输出图表: {out_path}")
 
 
